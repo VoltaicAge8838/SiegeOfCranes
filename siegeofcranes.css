@@ -69,10 +69,8 @@
 
 
 
-#playertables {
+/* #playertables {
     position: relative;
-    /* width: 710px;
-    height: 510px; */
 }
 
 .playertablename {
@@ -80,7 +78,6 @@
 }
 
 .playertable {
-    /* position: absolute; */
     text-align: center;
     width: 180px;
     height: 250px;
@@ -92,7 +89,7 @@
     margin-top: 5px;
     width: 100px;
     height: 143px;
-}
+} */
 
 .cardontable {
     position: absolute;

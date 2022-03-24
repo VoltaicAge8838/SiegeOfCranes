@@ -52,24 +52,8 @@ function (dojo, declare) {
         {
             console.log( "Starting game setup" );
 
-            // Setting up player boards
-            // for( var player_id in gamedatas.players )
-            // {
-            //     var player = gamedatas.players[player_id];
-
-            //     // TODO: Setting up players boards if needed
-            // }
-
-            // TODO: Set up your game interface here, according to "gamedatas"
-
-            this.playerHand = new ebg.stock(); // new stock object for hand
-            this.playerHand.create(this, $('myhand'), this.cardwidth, this.cardheight);
-
-            this.playerHand.image_items_per_row = 5;
-
-            for (var type = 1; type <= 10; type++) {
-                this.playerHand.addItemType(type, type, g_gamethemeurl + 'img/cards.jpg', type - 1);
-            }
+            // set up player hand
+            this.playerHand = this.setupStock('myhand');
 
             // Cards in player's hand
             for (var i in this.gamedatas.hand) {
@@ -77,14 +61,22 @@ function (dojo, declare) {
                 this.playerHand.addToStockWithId(card.type, card.id);
             }
 
+            // Setting up all players' collections
+            this.playersCollection = [];
+            for (var player_id in gamedatas.players) {
+                // var player = gamedatas.players[player_id];
+                this.playersCollection[player_id] = this.setupStock(`playercollection_${player_id}`);
+            }
+
             // Cards played on table
             for (i in this.gamedatas.cardsontable) {
                 var card = this.gamedatas.cardsontable[i];
                 var player_id = card.location_arg;
+                // this.playersCollection[player_id].addToStockWithId(card.type, card.id);
                 this.playCardOnTable(player_id, card.type, card.id);
             }
 
-            dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
+            // dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -159,6 +151,10 @@ function (dojo, declare) {
             {
                 switch( stateName )
                 {
+                    case 'playerTurn':
+                        this.addActionButton('playAction_button', _('Play Action'), 'playSelectedCards');
+                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'playSelectedCards');
+                        break;
 /*
                  Example:
 
@@ -185,9 +181,52 @@ function (dojo, declare) {
 
         */
 
+        setupStock: function(templateName) {
+            var stock = new ebg.stock(); // new stock object for hand
+            stock.create(this, $(templateName), this.cardwidth, this.cardheight);
+
+            stock.image_items_per_row = 5;
+
+            for (var type = 1; type <= 10; type++) {
+                stock.addItemType(type, type, g_gamethemeurl + 'img/cards.jpg', type - 1);
+            }
+
+            return stock;
+        },
+
         playCardOnTable : function(player_id, type, card_id) {
             // console.log('player_id', player_id, 'type', type, 'card_id', card_id);
-            dojo.place(
+            // dojo.place(
+            //     this.format_block(
+            //         'jstpl_cardontable',
+            //         {
+            //             x: this.cardwidth * ((type - 1) % 5),
+            //             y: this.cardheight * Math.floor((type - 1) / 5),
+            //             card_id: card_id
+            //         }
+            //     ),
+            //     'playercollection_' + player_id
+            // );
+
+            // if (player_id != this.player_id) {
+            //     // some opponent played a card
+            //     // move card from player panel
+            //     this.placeOnObject('cardontable_' + card_id, 'overall_player_board_' + player_id);
+            // } else if ($('myhand_item_' + card_id)) {
+            //     // you played a card. if it exists in your hand, move card from there
+            //     // and remove corresponding item
+            //     this.placeOnObject('cardontable_' + card_id, 'myhand_item_' + card_id);
+            //     this.playerHand.removeFromStockById(card_id);
+            // }
+
+            // in any case: move it to its final destination
+
+            var source_id = 'overall_player_board_' + player_id;
+            if ($('myhand_item_' + card_id)) {
+                source_id = 'myhand_item_' + card_id;
+                this.playerHand.removeFromStockById(card_id);
+            }
+            this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
@@ -196,22 +235,12 @@ function (dojo, declare) {
                         card_id: card_id
                     }
                 ),
+                'playercollection_' + player_id,
+                source_id,
                 'playercollection_' + player_id
-            );
+            ).play();
 
-            if (player_id != this.player_id) {
-                // some opponent played a card
-                // move card from player panel
-                this.placeOnObject('cardontable_' + card_id, 'overall_player_board_' + player_id);
-            } else if ($('myhand_item_' + card_id)) {
-                // you played a card. if it exists in your hand, move card from there
-                // and remove corresponding item
-                this.placeOnObject('cardontable_' + card_id, 'myhand_item_' + card_id);
-                this.playerHand.removeFromStockById(card_id);
-            }
-
-            // in any case: move it to its final destination
-            this.slideToObject('cardontable_' + card_id, 'playercollection_' + player_id).play();
+            this.playersCollection[player_id].addToStockWithId(type, card_id);
         },
 
 
@@ -263,7 +292,7 @@ function (dojo, declare) {
 
         */
 
-        onPlayerHandSelectionChanged: function() {
+        playSelectedCards: function() {
             var items = this.playerHand.getSelectedItems();
             if (items.length > 0) {
                 var action = 'playCard';
