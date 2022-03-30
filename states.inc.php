@@ -68,8 +68,13 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} must play a card or pass'),
         "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
         "type" => "activeplayer",
-        "possibleactions" => array("playCard"),
-        "transitions" => array("playCard" => 3)
+        "possibleactions" => array("playAction", "playAttackAction", "addToCollection", "drawCards"),
+        "transitions" => array(
+            "playAction" => 4,
+            "playAttackAction" => 5,
+            "addToCollection" => 6,
+            "nextPlayer" => 3,
+        )
     ),
 
     3 => array(
@@ -78,9 +83,52 @@ $machinestates = array(
         "type" => "game",
         "action" => "stNextPlayer",
         "transitions" => array(
-            "nextPlayer" => 2
+            "playerTurn" => 2
         )
     ),
+
+    4 => array(
+        "name" => "performAction",
+        "description" => "",
+        "type" => "game",
+        "action" => "stPerformAction",
+        "transitions" => array(
+            "nextPlayer" => 3
+        )
+    ),
+
+    // TODO: make this an all-players state
+    5 => array(
+        "name" => "waitForFoxes",
+        "description" => clienttranslate('You may play a Fox or pass'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 5,
+            "passFox" => 4
+        )
+    ),
+
+    6 => array(
+        "name" => "waitForCranes",
+        "description" => clienttranslate('You may play a Fox or pass'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 5,
+            "passFox" => 4
+        )
+    ),
+
+    // 7 => array(
+    //     "name" => "drawCards",
+    //     "description" => "",
+    //     "type" => "game",
+    //     "action" => "stDrawCards",
+    //     "transitions" => array(
+    //         "nextPlayer" => 3
+    //     )
+    // ),
 
 /*
     Examples:

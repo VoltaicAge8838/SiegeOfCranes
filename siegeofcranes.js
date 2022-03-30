@@ -73,7 +73,7 @@ function (dojo, declare) {
                 var card = this.gamedatas.cardsontable[i];
                 var player_id = card.location_arg;
                 // this.playersCollection[player_id].addToStockWithId(card.type, card.id);
-                this.playCardOnTable(player_id, card.type, card.id);
+                this.addCardToCollection(player_id, card.type, card.id);
             }
 
             // dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
@@ -152,8 +152,9 @@ function (dojo, declare) {
                 switch( stateName )
                 {
                     case 'playerTurn':
-                        this.addActionButton('playAction_button', _('Play Action'), 'playSelectedCards');
-                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'playSelectedCards');
+                        this.addActionButton('playAction_button', _('Play Action'), 'addToCollection');
+                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
+                        this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
                         break;
 /*
                  Example:
@@ -194,33 +195,7 @@ function (dojo, declare) {
             return stock;
         },
 
-        playCardOnTable : function(player_id, type, card_id) {
-            // console.log('player_id', player_id, 'type', type, 'card_id', card_id);
-            // dojo.place(
-            //     this.format_block(
-            //         'jstpl_cardontable',
-            //         {
-            //             x: this.cardwidth * ((type - 1) % 5),
-            //             y: this.cardheight * Math.floor((type - 1) / 5),
-            //             card_id: card_id
-            //         }
-            //     ),
-            //     'playercollection_' + player_id
-            // );
-
-            // if (player_id != this.player_id) {
-            //     // some opponent played a card
-            //     // move card from player panel
-            //     this.placeOnObject('cardontable_' + card_id, 'overall_player_board_' + player_id);
-            // } else if ($('myhand_item_' + card_id)) {
-            //     // you played a card. if it exists in your hand, move card from there
-            //     // and remove corresponding item
-            //     this.placeOnObject('cardontable_' + card_id, 'myhand_item_' + card_id);
-            //     this.playerHand.removeFromStockById(card_id);
-            // }
-
-            // in any case: move it to its final destination
-
+        addCardToCollection : function(player_id, type, card_id) {
             var source_id = 'overall_player_board_' + player_id;
             if ($('myhand_item_' + card_id)) {
                 source_id = 'myhand_item_' + card_id;
@@ -292,10 +267,10 @@ function (dojo, declare) {
 
         */
 
-        playSelectedCards: function() {
+        addToCollection: function() {
             var items = this.playerHand.getSelectedItems();
             if (items.length > 0) {
-                var action = 'playCard';
+                var action = 'addToCollection';
                 if (this.checkAction(action, true)) {
                     var card_id = items[0].id;
                     this.ajaxcall(
@@ -313,6 +288,22 @@ function (dojo, declare) {
                 } else {
                     this.playerHand.unselectAll();
                 }
+            }
+        },
+
+        drawCards: function() {
+            var action = 'drawCards';
+            if (this.checkAction(action, true)) {
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        id: 1,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
             }
         },
 
@@ -345,8 +336,10 @@ function (dojo, declare) {
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             //
 
-            dojo.subscribe('playCard', this, "notif_playCard");
+            dojo.subscribe('addToCollection', this, "notif_addToCollection");
             dojo.subscribe('newScores', this, "notif_newScores");
+            dojo.subscribe('drawCards', this, "notif_drawCards");
+            dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -366,13 +359,24 @@ function (dojo, declare) {
 
         */
 
-        notif_playCard: function(notif) {
-            this.playCardOnTable(notif.args.player_id, notif.args.type, notif.args.card_id);
+        notif_addToCollection: function(notif) {
+            this.addCardToCollection(notif.args.player_id, notif.args.type, notif.args.card_id);
         },
 
         notif_newScores: function(notif) {
             for (var player_id in notif.args.newScores) {
                 this.scoreCtrl[player_id].toValue(notif.args.newScores[player_id]);
+            }
+        },
+
+        notif_drawCards: function(notif) {
+            // do nothing
+        },
+
+        notif_playerDrawCards: function(notif) {
+            for (var card_index in notif.args.cards) {
+                var card = notif.args.cards[card_index];
+                this.playerHand.addToStockWithId(card.type, card.id);
             }
         },
    });

@@ -213,15 +213,15 @@ class SiegeOfCranes extends Table
 
     */
 
-    function playCard($card_id) {
-        self::checkAction("playCard");
+    function playAction($card_id) {
+        self::checkAction("playAction");
         $player_id = self::getActivePlayerId();
-        $this->cards->moveCard($card_id, 'cardsontable', $player_id);
+        $this->cards->moveCard($card_id, 'discard', $player_id);
         // check rules here
         $currentCard = $this->cards->getCard($card_id);
         // and notify
         self::notifyAllPlayers(
-            'playCard',
+            'playAction',
             clienttranslate('${player_name} plays ${type_displayed}'),
             array (
                 'i18n' => array('type_displayed'),
@@ -233,7 +233,80 @@ class SiegeOfCranes extends Table
             )
         );
         // next player
-        $this->gamestate->nextState('playCard');
+        $this->gamestate->nextState('nextPlayer');
+    }
+
+    function playAttackAction($card_id) {
+        self::checkAction("playAttackAction");
+        $player_id = self::getActivePlayerId();
+        $this->cards->moveCard($card_id, 'discard', $player_id);
+        // check rules here
+        $currentCard = $this->cards->getCard($card_id);
+        // and notify
+        self::notifyAllPlayers(
+            'playAttackAction',
+            clienttranslate('${player_name} plays ${type_displayed}'),
+            array (
+                'i18n' => array('type_displayed'),
+                'card_id' => $card_id,
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'type' => $currentCard['type'],
+                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+            )
+        );
+        // next player
+        $this->gamestate->nextState('waitForFoxes');
+    }
+
+    function addToCollection($card_id) {
+        self::checkAction("addToCollection");
+        $player_id = self::getActivePlayerId();
+        $this->cards->moveCard($card_id, 'cardsontable', $player_id);
+        // check rules here
+        $currentCard = $this->cards->getCard($card_id);
+        // and notify
+        self::notifyAllPlayers(
+            'addToCollection',
+            clienttranslate('${player_name} adds ${type_displayed} to their collection'),
+            array (
+                'i18n' => array('type_displayed'),
+                'card_id' => $card_id,
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'type' => $currentCard['type'],
+                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+            )
+        );
+        // next player
+        $this->gamestate->nextState('nextPlayer');
+    }
+
+    function drawCards() {
+        self::checkAction("drawCards");
+        $player_id = self::getActivePlayerId();
+        $cards = $this->cards->pickCards(2, 'deck', $player_id);
+        // and notify
+        self::notifyAllPlayers(
+            'drawCards',
+            clienttranslate('${player_name} draws 2 cards'),
+            array (
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName()
+            )
+        );
+        self::notifyPlayer(
+            $player_id,
+            'playerDrawCards',
+            clienttranslate('${player_name} draw 2 cards'),
+            array (
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'cards' => $cards
+            )
+        );
+        // next player
+        $this->gamestate->nextState('nextPlayer');
     }
 
 
@@ -293,6 +366,14 @@ class SiegeOfCranes extends Table
     function stNextPlayer() {
         $player_id = self::activeNextPlayer();
         self::giveExtraTime($player_id);
+        $this->gamestate->nextState('playerTurn');
+    }
+
+    function stPerformAction() {
+        $this->gamestate->nextState('nextPlayer');
+    }
+
+    function stAddToCollection() {
         $this->gamestate->nextState('nextPlayer');
     }
 

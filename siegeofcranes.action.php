@@ -7,7 +7,7 @@
 * This code has been produced on the BGA studio platform for use on https://boardgamearena.com.
 * See http://en.doc.boardgamearena.com/Studio for more information.
 * -----
-* 
+*
 * siegeofcranes.action.php
 *
 * SiegeOfCranes main action entry point
@@ -15,14 +15,14 @@
 *
 * In this file, you are describing all the methods that can be called from your
 * user interface logic (javascript).
-*       
+*
 * If you define a method "myAction" here, then you can call it from your javascript code with:
 * this.ajaxcall( "/siegeofcranes/siegeofcranes/myAction.html", ...)
 *
 */
 
 class action_siegeofcranes extends APP_GameAction
-{ 
+{
     // Constructor: please do not modify
     public function __default()
     {
@@ -36,25 +36,60 @@ class action_siegeofcranes extends APP_GameAction
             $this->view = "siegeofcranes_siegeofcranes";
             self::trace( "Complete reinitialization of board game" );
         }
-    } 
-    
+    }
+
     // TODO: defines your action entry points there
 
-    public function playCard() {
+    public function playAction() {
         self::setAjaxMode();
         $card_id = self::getArg("id", AT_posint, true);
-        $this->game->playCard($card_id);
+        $this->game->playAction($card_id);
+        self::ajaxResponse();
+    }
+
+    public function playAttackAction() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->playAttackAction($card_id);
+        self::ajaxResponse();
+    }
+
+    public function addToCollection() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->addToCollection($card_id);
+        self::ajaxResponse();
+    }
+
+    public function drawCards() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->drawCards($card_id);
+        self::ajaxResponse();
+    }
+
+    public function playFox() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->playFox($card_id);
+        self::ajaxResponse();
+    }
+
+    public function passFox() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->passFox($card_id);
         self::ajaxResponse();
     }
 
 
     /*
-    
+
     Example:
-    
+
     public function myAction()
     {
-        self::setAjaxMode();     
+        self::setAjaxMode();
 
         // Retrieve arguments
         // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
@@ -66,7 +101,7 @@ class action_siegeofcranes extends APP_GameAction
 
         self::ajaxResponse( );
     }
-    
+
     */
 
 }
