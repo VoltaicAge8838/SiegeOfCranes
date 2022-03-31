@@ -145,7 +145,7 @@ class SiegeOfCranes extends Table
         $result['hand'] = $this->cards->getCardsInLocation('hand', $current_player_id);
 
         // Cards played on the table
-        $result['cardsontable'] = $this->cards->getCardsInLocation('cardsontable');
+        $result['collections'] = $this->cards->getCardsInLocation('collections');
 
         return $result;
     }
@@ -176,6 +176,29 @@ class SiegeOfCranes extends Table
         In this space, you can put any utility methods useful for your game logic
     */
 
+    function updateScores() {
+        $players = self::loadPlayersBasicInfos();
+        $players_points = array();
+        foreach ($players as $player_id => $player) {
+            $players_points[$player_id] = 0;
+        }
+
+        $cards = $this->cards->getCardsInLocation('collections');
+        foreach ($cards as $card_index => $card) {
+            $players_points[$card['location_arg']]++;
+        }
+
+        foreach ($players_points as $player_id => $points) {
+            $sql = "UPDATE player SET player_score=$points WHERE player_id='$player_id'";
+            self::DbQuery($sql);
+        }
+
+        self::notifyAllPlayers(
+            'newScores',
+            '',
+            array ('newScores' => $players_points)
+        );
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -262,10 +285,9 @@ class SiegeOfCranes extends Table
     function addToCollection($card_id) {
         self::checkAction("addToCollection");
         $player_id = self::getActivePlayerId();
-        $this->cards->moveCard($card_id, 'cardsontable', $player_id);
-        // check rules here
+        $this->cards->moveCard($card_id, 'collections', $player_id);
         $currentCard = $this->cards->getCard($card_id);
-        // and notify
+        // notify collected card
         self::notifyAllPlayers(
             'addToCollection',
             clienttranslate('${player_name} adds ${type_displayed} to their collection'),
@@ -278,6 +300,7 @@ class SiegeOfCranes extends Table
                 'type_displayed' => $this->card_types[$currentCard['type']]['name']
             )
         );
+        $this->updateScores();
         // next player
         $this->gamestate->nextState('nextPlayer');
     }

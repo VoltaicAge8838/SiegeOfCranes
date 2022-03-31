@@ -69,8 +69,8 @@ function (dojo, declare) {
             }
 
             // Cards played on table
-            for (i in this.gamedatas.cardsontable) {
-                var card = this.gamedatas.cardsontable[i];
+            for (i in this.gamedatas.collections) {
+                var card = this.gamedatas.collections[i];
                 var player_id = card.location_arg;
                 // this.playersCollection[player_id].addToStockWithId(card.type, card.id);
                 this.addCardToCollection(player_id, card.type, card.id);
