@@ -176,27 +176,53 @@ class SiegeOfCranes extends Table
         In this space, you can put any utility methods useful for your game logic
     */
 
+
+    function scoreForType($n) {
+        switch ($n) {
+            case 1: return 0;
+            case 2: return 1;
+            case 3: return 2;
+            case 4: return 3;
+            case 5: return 5;
+            case 6: return 7;
+            case 7: return 10;
+            case 8: return 14;
+            case 9: return 20;
+            case 10: return 29;
+            default: return 0;
+        }
+    }
+
     function updateScores() {
         $players = self::loadPlayersBasicInfos();
-        $players_points = array();
+        $players_card_count = array();
         foreach ($players as $player_id => $player) {
-            $players_points[$player_id] = 0;
+            $players_card_count[$player_id] = array();
+            foreach ($this->card_types as $type_id => $type) {
+                $players_card_count[$player_id][$type_id] = 0;
+            }
         }
 
         $cards = $this->cards->getCardsInLocation('collections');
         foreach ($cards as $card_index => $card) {
-            $players_points[$card['location_arg']]++;
+            $players_card_count[$card['location_arg']][$card['type']]++;
         }
 
-        foreach ($players_points as $player_id => $points) {
-            $sql = "UPDATE player SET player_score=$points WHERE player_id='$player_id'";
+        $players_scores = array();
+        foreach ($players_card_count as $player_id => $points) {
+            $score = 0;
+            foreach($players_card_count[$player_id] as $card_type => $count) {
+                $score += $this->scoreForType($count);
+            }
+            $sql = "UPDATE player SET player_score=$score WHERE player_id='$player_id'";
             self::DbQuery($sql);
+            $players_scores[$player_id] = $score;
         }
 
         self::notifyAllPlayers(
             'newScores',
             '',
-            array ('newScores' => $players_points)
+            array ('newScores' => $players_scores)
         );
     }
 
