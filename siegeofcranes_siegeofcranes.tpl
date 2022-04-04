@@ -25,6 +25,12 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+<div id="discard_wrap" class="whiteblock">
+    <h3>Discard</h3>
+    <div id="discard">
+    </div>
+</div>
+
 <div id="playertables">
     <!-- BEGIN player -->
     <div class="playertable whiteblock playertable_{PLAYER_ID}">

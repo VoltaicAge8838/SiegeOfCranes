@@ -152,7 +152,7 @@ function (dojo, declare) {
                 switch( stateName )
                 {
                     case 'playerTurn':
-                        this.addActionButton('playAction_button', _('Play Action'), 'addToCollection');
+                        this.addActionButton('playAction_button', _('Play Action'), 'playAction');
                         this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
                         this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
                         break;
@@ -218,6 +218,29 @@ function (dojo, declare) {
             this.playersCollection[player_id].addToStockWithId(type, card_id);
         },
 
+        playActionCard : function(player_id, type, card_id) {
+            var source_id = 'overall_player_board_' + player_id;
+            if ($('myhand_item_' + card_id)) {
+                source_id = 'myhand_item_' + card_id;
+                this.playerHand.removeFromStockById(card_id);
+            }
+            this.slideTemporaryObject(
+                this.format_block(
+                    'jstpl_cardontable',
+                    {
+                        x: this.cardwidth * ((type - 1) % 5),
+                        y: this.cardheight * Math.floor((type - 1) / 5),
+                        card_id: card_id
+                    }
+                ),
+                'discard',
+                source_id,
+                'discard'
+            ).play();
+
+            // this.playersCollection[player_id].addToStockWithId(type, card_id);
+        },
+
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -267,9 +290,33 @@ function (dojo, declare) {
 
         */
 
+        playAction: function() {
+            var items = this.playerHand.getSelectedItems();
+            if (items.length === 1) {
+                var action = 'playAction';
+                if (this.checkAction(action, true)) {
+                    var card_id = items[0].id;
+                    this.ajaxcall(
+                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                        {
+                            id: card_id,
+                            lock: true
+                        },
+                        this,
+                        function(result) {},
+                        function(is_error) {}
+                    );
+
+                    this.playerHand.unselectAll();
+                } else {
+                    this.playerHand.unselectAll();
+                }
+            }
+        },
+
         addToCollection: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length > 0) {
+            if (items.length === 1) {
                 var action = 'addToCollection';
                 if (this.checkAction(action, true)) {
                     var card_id = items[0].id;
@@ -340,6 +387,7 @@ function (dojo, declare) {
             dojo.subscribe('newScores', this, "notif_newScores");
             dojo.subscribe('drawCards', this, "notif_drawCards");
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
+            dojo.subscribe('playAction', this, "notif_playAction");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -378,6 +426,10 @@ function (dojo, declare) {
                 var card = notif.args.cards[card_index];
                 this.playerHand.addToStockWithId(card.type, card.id);
             }
+        },
+
+        notif_playAction: function(notif) {
+            this.playActionCard(notif.args.player_id, notif.args.type, notif.args.card_id);
         },
    });
 });
