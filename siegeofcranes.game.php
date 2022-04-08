@@ -281,19 +281,20 @@ class SiegeOfCranes extends Table
                 'type_displayed' => $this->card_types[$currentCard['type']]['name']
             )
         );
-        // next player
-        $this->gamestate->nextState('nextPlayer');
+        // TODO: check if card is an attack
+        // $this->gamestate->nextState('performAction');
+        $this->gamestate->nextState('waitForFoxes');
     }
 
-    function playAttackAction($card_id) {
-        self::checkAction("playAttackAction");
+    function playFox($card_id) {
+        self::checkAction("playFox");
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard', $player_id);
         // check rules here
         $currentCard = $this->cards->getCard($card_id);
         // and notify
         self::notifyAllPlayers(
-            'playAttackAction',
+            'playFox',
             clienttranslate('${player_name} plays ${type_displayed}'),
             array (
                 'i18n' => array('type_displayed'),
@@ -304,8 +305,57 @@ class SiegeOfCranes extends Table
                 'type_displayed' => $this->card_types[$currentCard['type']]['name']
             )
         );
-        // next player
-        $this->gamestate->nextState('waitForFoxes');
+        // TODO: check if card is an attack
+        // $this->gamestate->nextState('performAction');
+        $this->gamestate->nextState('playFox');
+    }
+
+    function passFox($card_id) {
+        self::checkAction("passFox");
+        $player_id = self::getActivePlayerId();
+        $this->cards->moveCard($card_id, 'discard', $player_id);
+        // check rules here
+        $currentCard = $this->cards->getCard($card_id);
+        // and notify
+        self::notifyAllPlayers(
+            'passFox',
+            clienttranslate('${player_name} plays ${type_displayed}'),
+            array (
+                'i18n' => array('type_displayed'),
+                'card_id' => $card_id,
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'type' => $currentCard['type'],
+                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+            )
+        );
+        // TODO: check if card is an attack
+        // $this->gamestate->nextState('performAction');
+        $this->gamestate->nextState('passFox');
+    }
+
+    function performAction($card_id) {
+        self::checkAction("playAction");
+        $player_id = self::getActivePlayerId();
+        $this->cards->moveCard($card_id, 'discard', $player_id);
+        // check rules here
+        $currentCard = $this->cards->getCard($card_id);
+        // and notify
+        self::notifyAllPlayers(
+            'playAction',
+            clienttranslate('${player_name} plays ${type_displayed}'),
+            array (
+                'i18n' => array('type_displayed'),
+                'card_id' => $card_id,
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'type' => $currentCard['type'],
+                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+            )
+        );
+        // TODO: check if card is an attack
+        // $this->gamestate->nextState('performAction');
+        $this->gamestate->nextState('nextPlayer');
     }
 
     function addToCollection($card_id) {
@@ -424,6 +474,10 @@ class SiegeOfCranes extends Table
 
     function stAddToCollection() {
         $this->gamestate->nextState('nextPlayer');
+    }
+
+    function stMultiPlayerInit() {
+        $this->gamestate->setAllPlayersMultiactive();
     }
 
 //////////////////////////////////////////////////////////////////////////////

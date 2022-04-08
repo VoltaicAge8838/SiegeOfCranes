@@ -156,6 +156,12 @@ function (dojo, declare) {
                         this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
                         this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
                         break;
+
+                    case 'waitForFoxes':
+                        this.addActionButton('playFox_button', _('Play Fox'), 'playFox');
+                        this.addActionButton('passFox_button', _('Pass'), 'passFox');
+                        break;
+
 /*
                  Example:
 
@@ -340,6 +346,38 @@ function (dojo, declare) {
 
         drawCards: function() {
             var action = 'drawCards';
+            if (this.checkAction(action, true)) {
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        id: 1,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
+            }
+        },
+
+        playFox: function() {
+            var action = 'playFox';
+            if (this.checkAction(action, true)) {
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        id: 1,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
+            }
+        },
+
+        passFox: function() {
+            var action = 'passFox';
             if (this.checkAction(action, true)) {
                 this.ajaxcall(
                     "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
