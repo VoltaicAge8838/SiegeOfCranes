@@ -72,7 +72,7 @@ $machinestates = array(
         "transitions" => array(
             "playAction" => 4,
             "waitForFoxes" => 5,
-            "addToCollection" => 6,
+            "addToCollection" => 7,
             "nextPlayer" => 3,
         )
     ),
@@ -97,21 +97,33 @@ $machinestates = array(
         )
     ),
 
-    // TODO: make this an all-players state
     5 => array(
-        "name" => "waitForFoxes",
-        "description" => clienttranslate('Other players may play a Fox or pass'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Fox or pass'),
+        "name" => "waitForUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox to cancel the action or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to cancel the action or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playFox", "passFox"),
         "transitions" => array(
-            "playFox" => 5,
+            "playFox" => 6,
             "passFox" => 4
         ),
         "action" => "stMultiPlayerInit"
     ),
 
     6 => array(
+        "name" => "waitForRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox to perform the action or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to perform the action or pass'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 5,
+            "passFox" => 3
+        ),
+        "action" => "stMultiPlayerInit"
+    ),
+
+    7 => array(
         "name" => "waitForCranes",
         "description" => clienttranslate('${you} may play a Fox or pass'),
         "type" => "multipleactiveplayer",

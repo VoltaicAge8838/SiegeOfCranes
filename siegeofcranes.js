@@ -157,8 +157,13 @@ function (dojo, declare) {
                         this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
                         break;
 
-                    case 'waitForFoxes':
-                        this.addActionButton('playFox_button', _('Play Fox'), 'playFox');
+                    case 'waitForUndoFoxes':
+                        this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
+                        this.addActionButton('passFox_button', _('Pass'), 'passFox');
+                        break;
+
+                    case 'waitForRedoFoxes':
+                        this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
                         this.addActionButton('passFox_button', _('Pass'), 'passFox');
                         break;
 

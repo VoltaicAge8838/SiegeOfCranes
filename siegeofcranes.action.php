@@ -77,8 +77,7 @@ class action_siegeofcranes extends APP_GameAction
 
     public function passFox() {
         self::setAjaxMode();
-        $card_id = self::getArg("id", AT_posint, true);
-        $this->game->passFox($card_id);
+        $this->game->passFox();
         self::ajaxResponse();
     }
 
