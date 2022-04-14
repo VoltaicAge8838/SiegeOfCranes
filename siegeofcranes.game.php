@@ -289,10 +289,15 @@ class SiegeOfCranes extends Table
     function playFox($card_id) {
         self::checkAction("playFox");
         $player_id = self::getCurrentPlayerId();
-        $this->cards->moveCard($card_id, 'discard', $player_id);
-        // check rules here
         $currentCard = $this->cards->getCard($card_id);
-        // and notify
+
+        // 4 == fox card
+        if ($currentCard['type'] != 4) {
+            throw new BgaUserException(self::_("Only a Fox card may be played now."));
+        }
+
+        $this->cards->moveCard($card_id, 'discard', $player_id);
+
         self::notifyAllPlayers(
             'playFox',
             clienttranslate('${player_name} plays ${type_displayed}'),
@@ -305,8 +310,7 @@ class SiegeOfCranes extends Table
                 'type_displayed' => $this->card_types[$currentCard['type']]['name']
             )
         );
-        // TODO: check if card is an attack
-        // $this->gamestate->nextState('performAction');
+
         $this->gamestate->nextState('playFox');
     }
 

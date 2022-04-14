@@ -229,7 +229,7 @@ function (dojo, declare) {
             this.playersCollection[player_id].addToStockWithId(type, card_id);
         },
 
-        playActionCard : function(player_id, type, card_id) {
+        discardCard : function(player_id, type, card_id) {
             var source_id = 'overall_player_board_' + player_id;
             if ($('myhand_item_' + card_id)) {
                 source_id = 'myhand_item_' + card_id;
@@ -366,18 +366,26 @@ function (dojo, declare) {
         },
 
         playFox: function() {
-            var action = 'playFox';
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: 1,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(is_error) {}
-                );
+            var items = this.playerHand.getSelectedItems();
+            if (items.length === 1) {
+                var action = 'playFox';
+                if (this.checkAction(action, true)) {
+                    var card_id = items[0].id;
+                    this.ajaxcall(
+                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                        {
+                            id: card_id,
+                            lock: true
+                        },
+                        this,
+                        function(result) {},
+                        function(is_error) {}
+                    );
+
+                    this.playerHand.unselectAll();
+                } else {
+                    this.playerHand.unselectAll();
+                }
             }
         },
 
@@ -431,6 +439,7 @@ function (dojo, declare) {
             dojo.subscribe('drawCards', this, "notif_drawCards");
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
             dojo.subscribe('playAction', this, "notif_playAction");
+            dojo.subscribe('playFox', this, "notif_playFox");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -472,7 +481,11 @@ function (dojo, declare) {
         },
 
         notif_playAction: function(notif) {
-            this.playActionCard(notif.args.player_id, notif.args.type, notif.args.card_id);
+            this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
+        },
+
+        notif_playFox: function(notif) {
+            this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
         },
    });
 });
