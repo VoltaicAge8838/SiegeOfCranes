@@ -437,6 +437,7 @@ function (dojo, declare) {
             dojo.subscribe('addToCollection', this, "notif_addToCollection");
             dojo.subscribe('newScores', this, "notif_newScores");
             dojo.subscribe('drawCards', this, "notif_drawCards");
+            this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
             dojo.subscribe('playAction', this, "notif_playAction");
             dojo.subscribe('playFox', this, "notif_playFox");

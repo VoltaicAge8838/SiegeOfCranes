@@ -303,13 +303,15 @@ class SiegeOfCranes extends Table
 
         $this->cards->moveCard($card_id, 'discard', $player_id);
 
+        $players = self::loadPlayersBasicInfos();
+
         self::notifyAllPlayers(
             'playFox',
             clienttranslate('${player_name} plays ${type_displayed} to affect ${target_type_displayed}'),
             array (
                 'i18n' => array('type_displayed'),
                 'player_id' => $player_id,
-                'player_name' => self::getActivePlayerName(),
+                'player_name' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
                 'type' => $current_card['type'],
                 'type_displayed' => $this->card_types[$current_card['type']]['name'],
@@ -367,7 +369,7 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $player_id,
             'playerDrawCards',
-            clienttranslate('${player_name} draw 2 cards'),
+            clienttranslate('${player_name} draws 2 cards'),
             array (
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
@@ -467,19 +469,28 @@ class SiegeOfCranes extends Table
                 $players = self::loadPlayersBasicInfos();
                 foreach ($players as $player_id => $player) {
                     $cards_to_draw = 1;
+                    $text = '${player_name} draws 1 card';
                     if ($player_id == $current_player_id) {
                         $cards_to_draw = 4;
+                        $text = '${player_name} draws 4 cards';
                     }
                     $cards = $this->cards->pickCards($cards_to_draw, 'deck', $player_id);
                     self::notifyPlayer(
                         $player_id,
                         'playerDrawCards',
-                        clienttranslate('${player_name} draw ${cards_to_draw} cards'),
+                        clienttranslate($text),
                         array (
                             'player_id' => $player_id,
                             'player_name' => $player['player_name'],
-                            'cards_to_draw' => $cards_to_draw,
                             'cards' => $cards
+                        )
+                    );
+                    self::notifyAllPlayers(
+                        'drawCards',
+                        clienttranslate($text),
+                        array (
+                            'player_id' => $player_id,
+                            'player_name' => $player['player_name']
                         )
                     );
                 }
