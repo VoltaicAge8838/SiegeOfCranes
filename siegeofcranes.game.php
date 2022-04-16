@@ -439,24 +439,65 @@ class SiegeOfCranes extends Table
     }
 
     function stPerformAction() {
-        $player_id = self::getActivePlayerId();
+        $current_player_id = self::getActivePlayerId();
         $card_id = self::getGameStateValue("target_action_card_id");
 
-        $this->cards->moveCard($card_id, 'discard', $player_id);
         $currentCard = $this->cards->getCard($card_id);
-        // and notify
-        self::notifyAllPlayers(
-            'playAction',
-            clienttranslate('${player_name} plays ${type_displayed}'),
-            array (
-                'i18n' => array('type_displayed'),
-                'card_id' => $card_id,
-                'player_id' => $player_id,
-                'player_name' => self::getActivePlayerName(),
-                'type' => $currentCard['type'],
-                'type_displayed' => $this->card_types[$currentCard['type']]['name']
-            )
-        );
+
+        switch ($currentCard['type']) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            case 7:
+                break;
+            case 8:
+                break;
+            case 9:
+                break;
+            case 10: // jays
+                $players = self::loadPlayersBasicInfos();
+                foreach ($players as $player_id => $player) {
+                    $cards_to_draw = 1;
+                    if ($player_id == $current_player_id) {
+                        $cards_to_draw = 4;
+                    }
+                    $cards = $this->cards->pickCards($cards_to_draw, 'deck', $player_id);
+                    self::notifyPlayer(
+                        $player_id,
+                        'playerDrawCards',
+                        clienttranslate('${player_name} draw ${cards_to_draw} cards'),
+                        array (
+                            'player_id' => $player_id,
+                            'player_name' => $player['player_name'],
+                            'cards_to_draw' => $cards_to_draw,
+                            'cards' => $cards
+                        )
+                    );
+                }
+                break;
+        }
+
+        // self::notifyAllPlayers(
+        //     'playAction',
+        //     clienttranslate('${player_name} plays ${type_displayed}'),
+        //     array (
+        //         'i18n' => array('type_displayed'),
+        //         'card_id' => $card_id,
+        //         'current_player_id' => $current_player_id,
+        //         'player_name' => self::getActivePlayerName(),
+        //         'type' => $currentCard['type'],
+        //         'type_displayed' => $this->card_types[$currentCard['type']]['name']
+        //     )
+        // );
         $this->gamestate->nextState('nextPlayer');
     }
 
