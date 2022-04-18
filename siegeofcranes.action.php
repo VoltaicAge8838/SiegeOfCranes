@@ -63,8 +63,7 @@ class action_siegeofcranes extends APP_GameAction
 
     public function drawCards() {
         self::setAjaxMode();
-        $card_id = self::getArg("id", AT_posint, true);
-        $this->game->drawCards($card_id);
+        $this->game->drawCardsAction();
         self::ajaxResponse();
     }
 

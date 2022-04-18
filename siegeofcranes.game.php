@@ -226,6 +226,31 @@ class SiegeOfCranes extends Table
         );
     }
 
+    function drawCards($number_of_cards, $player_id, $player_name) {
+        $cards = $this->cards->pickCards($number_of_cards, 'deck', $player_id);
+        // and notify
+        self::notifyAllPlayers(
+            'drawCards',
+            clienttranslate('${player_name} draws ${number_of_cards} cards'),
+            array (
+                'player_id' => $player_id,
+                'player_name' => $player_name,
+                'number_of_cards' => $number_of_cards
+            )
+        );
+        self::notifyPlayer(
+            $player_id,
+            'playerDrawCards',
+            clienttranslate('${player_name} draws ${number_of_cards} cards'),
+            array (
+                'player_id' => $player_id,
+                'player_name' => $player_name,
+                'number_of_cards' => $number_of_cards,
+                'cards' => $cards
+            )
+        );
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -264,9 +289,14 @@ class SiegeOfCranes extends Table
 
     function playAction($card_id) {
         self::checkAction("playAction");
+        $current_card = $this->cards->getCard($card_id);
+
+        if ($this->card_types[$current_card['type']]['react'] == 1) {
+            throw new BgaUserException(self::_("Reaction cards may not be played now."));
+        }
+
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard', $player_id);
-        $currentCard = $this->cards->getCard($card_id);
 
         // and notify
         self::notifyAllPlayers(
@@ -277,15 +307,18 @@ class SiegeOfCranes extends Table
                 'card_id' => $card_id,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
-                'type' => $currentCard['type'],
-                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+                'type' => $current_card['type'],
+                'type_displayed' => $this->card_types[$current_card['type']]['name']
             )
         );
 
         self::setGameStateValue("target_action_card_id", $card_id);
-        // TODO: check if card is an attack
-        // $this->gamestate->nextState('performAction');
-        $this->gamestate->nextState('waitForFoxes');
+
+        if ($this->card_types[$current_card['type']]['attack'] == 1) {
+            $this->gamestate->nextState('waitForFoxes');
+        } else {
+            $this->gamestate->nextState('playAction');
+        }
     }
 
     function playFox($card_id) {
@@ -353,30 +386,10 @@ class SiegeOfCranes extends Table
         $this->gamestate->nextState('nextPlayer');
     }
 
-    function drawCards() {
+    function drawCardsAction() {
         self::checkAction("drawCards");
-        $player_id = self::getActivePlayerId();
-        $cards = $this->cards->pickCards(2, 'deck', $player_id);
-        // and notify
-        self::notifyAllPlayers(
-            'drawCards',
-            clienttranslate('${player_name} draws 2 cards'),
-            array (
-                'player_id' => $player_id,
-                'player_name' => self::getActivePlayerName()
-            )
-        );
-        self::notifyPlayer(
-            $player_id,
-            'playerDrawCards',
-            clienttranslate('${player_name} draws 2 cards'),
-            array (
-                'player_id' => $player_id,
-                'player_name' => self::getActivePlayerName(),
-                'cards' => $cards
-            )
-        );
-        // next player
+        $this->drawCards(2, self::getActivePlayerId(), self::getActivePlayerName());
+
         $this->gamestate->nextState('nextPlayer');
     }
 
@@ -447,23 +460,28 @@ class SiegeOfCranes extends Table
         $currentCard = $this->cards->getCard($card_id);
 
         switch ($currentCard['type']) {
-            case 1:
+            case 1: // rats
+                // move to state
                 break;
-            case 2:
+            case 2: // pandas
                 break;
-            case 3:
+            case 3: // kangaroo
+                // TODO: move to state
                 break;
-            case 4:
+            case 4: // foxes
+                throw new BgaVisibleSystemException ('Attempted to perform action for a Fox card.');
+            case 5: // finches
+                // TODO: move to state
                 break;
-            case 5:
+            case 6: // ferrets
                 break;
-            case 6:
+            case 7: // crocodiles
+                // TODO: move to state
                 break;
-            case 7:
-                break;
-            case 8:
-                break;
-            case 9:
+            case 8: // cranes
+                throw new BgaVisibleSystemException ('Attempted to perform action for a Crain card.');
+            case 9: // coyotes
+                // TODO: move to state
                 break;
             case 10: // jays
                 $players = self::loadPlayersBasicInfos();
@@ -474,41 +492,14 @@ class SiegeOfCranes extends Table
                         $cards_to_draw = 4;
                         $text = '${player_name} draws 4 cards';
                     }
-                    $cards = $this->cards->pickCards($cards_to_draw, 'deck', $player_id);
-                    self::notifyPlayer(
-                        $player_id,
-                        'playerDrawCards',
-                        clienttranslate($text),
-                        array (
-                            'player_id' => $player_id,
-                            'player_name' => $player['player_name'],
-                            'cards' => $cards
-                        )
-                    );
-                    self::notifyAllPlayers(
-                        'drawCards',
-                        clienttranslate($text),
-                        array (
-                            'player_id' => $player_id,
-                            'player_name' => $player['player_name']
-                        )
-                    );
+                    $this->drawCards($cards_to_draw, $player_id, $player['player_name']);
                 }
                 break;
+            default:
+                $type = $currentCard['type'];
+                throw new BgaVisibleSystemException ("Attempted to perform action for an unknown card type: $type.");
         }
 
-        // self::notifyAllPlayers(
-        //     'playAction',
-        //     clienttranslate('${player_name} plays ${type_displayed}'),
-        //     array (
-        //         'i18n' => array('type_displayed'),
-        //         'card_id' => $card_id,
-        //         'current_player_id' => $current_player_id,
-        //         'player_name' => self::getActivePlayerName(),
-        //         'type' => $currentCard['type'],
-        //         'type_displayed' => $this->card_types[$currentCard['type']]['name']
-        //     )
-        // );
         $this->gamestate->nextState('nextPlayer');
     }
 
