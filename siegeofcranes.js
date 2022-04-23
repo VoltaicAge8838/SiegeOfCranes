@@ -206,7 +206,7 @@ function (dojo, declare) {
             return stock;
         },
 
-        addCardToCollection : function(player_id, type, card_id) {
+        addCardToCollection: function(player_id, type, card_id) {
             var source_id = 'overall_player_board_' + player_id;
             if ($('myhand_item_' + card_id)) {
                 source_id = 'myhand_item_' + card_id;
@@ -229,7 +229,8 @@ function (dojo, declare) {
             this.playersCollection[player_id].addToStockWithId(type, card_id);
         },
 
-        discardCard : function(player_id, type, card_id) {
+        discardCard: function(player_id, type, card_id) {
+            console.log('discardCard', player_id, type, card_id);
             var source_id = 'overall_player_board_' + player_id;
             if ($('myhand_item_' + card_id)) {
                 source_id = 'myhand_item_' + card_id;
@@ -248,8 +249,13 @@ function (dojo, declare) {
                 source_id,
                 'discard'
             ).play();
+        },
 
-            // this.playersCollection[player_id].addToStockWithId(type, card_id);
+        addCardsToHand: function(cards) {
+            for (var card_index in cards) {
+                var card = cards[card_index];
+                this.playerHand.addToStockWithId(card.type, card.id);
+            }
         },
 
 
@@ -436,11 +442,14 @@ function (dojo, declare) {
 
             dojo.subscribe('addToCollection', this, "notif_addToCollection");
             dojo.subscribe('newScores', this, "notif_newScores");
-            dojo.subscribe('drawCards', this, "notif_drawCards");
+            dojo.subscribe('drawCards', this, "notif_noOp");
             this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
-            dojo.subscribe('playAction', this, "notif_playAction");
-            dojo.subscribe('playFox', this, "notif_playFox");
+            dojo.subscribe('discardAndDrawCards', this, "notif_noOp");
+            this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.player_id);
+            dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
+            dojo.subscribe('playAction', this, "notif_discardCard");
+            dojo.subscribe('playFox', this, "notif_discardCard");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -470,22 +479,23 @@ function (dojo, declare) {
             }
         },
 
-        notif_drawCards: function(notif) {
+        notif_noOp: function(notif) {
             // do nothing
         },
 
         notif_playerDrawCards: function(notif) {
-            for (var card_index in notif.args.cards) {
-                var card = notif.args.cards[card_index];
-                this.playerHand.addToStockWithId(card.type, card.id);
+            this.addCardsToHand(notif.args.cards);
+        },
+
+        notif_playerDiscardAndDrawCards: function(notif) {
+            var cards = this.playerHand.getAllItems();
+            for (var card in cards) {
+                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id);
             }
+            this.addCardsToHand(notif.args.cards);
         },
 
-        notif_playAction: function(notif) {
-            this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
-        },
-
-        notif_playFox: function(notif) {
+        notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
         },
    });

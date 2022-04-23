@@ -296,7 +296,7 @@ class SiegeOfCranes extends Table
         }
 
         $player_id = self::getActivePlayerId();
-        $this->cards->moveCard($card_id, 'discard', $player_id);
+        $this->cards->moveCard($card_id, 'discard');
 
         // and notify
         self::notifyAllPlayers(
@@ -334,7 +334,7 @@ class SiegeOfCranes extends Table
         $target_card_id = self::getGameStateValue("target_action_card_id");
         $target_card = $this->cards->getCard($target_card_id);
 
-        $this->cards->moveCard($card_id, 'discard', $player_id);
+        $this->cards->moveCard($card_id, 'discard');
 
         $players = self::loadPlayersBasicInfos();
 
@@ -455,6 +455,7 @@ class SiegeOfCranes extends Table
 
     function stPerformAction() {
         $current_player_id = self::getActivePlayerId();
+        $current_player_name = self::getActivePlayerName();
         $card_id = self::getGameStateValue("target_action_card_id");
 
         $currentCard = $this->cards->getCard($card_id);
@@ -464,6 +465,26 @@ class SiegeOfCranes extends Table
                 // move to state
                 break;
             case 2: // pandas
+                $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
+                $cards = $this->cards->pickCards(5, 'deck', $current_player_id);
+                self::notifyAllPlayers(
+                    'discardAndDrawCards',
+                    clienttranslate('${player_name} discards their hand and draws 5 cards'),
+                    array (
+                        'player_id' => $current_player_id,
+                        'player_name' => $current_player_name,
+                    )
+                );
+                self::notifyPlayer(
+                    $current_player_id,
+                    'playerDiscardAndDrawCards',
+                    clienttranslate('${player_name} discards their hand and draws 5 cards'),
+                    array (
+                        'player_id' => $current_player_id,
+                        'player_name' => $current_player_name,
+                        'cards' => $cards
+                    )
+                );
                 break;
             case 3: // kangaroo
                 // TODO: move to state
