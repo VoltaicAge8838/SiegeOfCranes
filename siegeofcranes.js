@@ -28,6 +28,8 @@ function (dojo, declare) {
             console.log('siegeofcranes constructor');
             this.cardwidth = 100;
             this.cardheight = 143;
+            this.iconwidth = 64;
+            this.iconheight = 64;
 
             // Here, you can init the global variables of your user interface
             // Example:
@@ -53,7 +55,7 @@ function (dojo, declare) {
             console.log( "Starting game setup" );
 
             // set up player hand
-            this.playerHand = this.setupStock('myhand');
+            this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardwidth, this.cardheight);
 
             // Cards in player's hand
             for (var i in this.gamedatas.hand) {
@@ -65,7 +67,7 @@ function (dojo, declare) {
             this.playersCollection = [];
             for (var player_id in gamedatas.players) {
                 // var player = gamedatas.players[player_id];
-                this.playersCollection[player_id] = this.setupStock(`playercollection_${player_id}`);
+                this.playersCollection[player_id] = this.setupStock(`playercollection_${player_id}`, 'icons.gif', this.iconwidth, this.iconheight);
             }
 
             // Cards played on table
@@ -193,14 +195,14 @@ function (dojo, declare) {
 
         */
 
-        setupStock: function(templateName) {
+        setupStock: function(templateName, imageName, width, height) {
             var stock = new ebg.stock(); // new stock object for hand
-            stock.create(this, $(templateName), this.cardwidth, this.cardheight);
+            stock.create(this, $(templateName), width, height);
 
             stock.image_items_per_row = 5;
 
             for (var type = 1; type <= 10; type++) {
-                stock.addItemType(type, type, g_gamethemeurl + 'img/cards.jpg', type - 1);
+                stock.addItemType(type, type, g_gamethemeurl + 'img/' + imageName, type - 1);
             }
 
             return stock;
