@@ -312,13 +312,14 @@ function (dojo, declare) {
         playAction: function() {
             var items = this.playerHand.getSelectedItems();
             if (items.length === 1) {
-                var action = 'playAction';
+                var action = items[0].type == 6 ? 'playFerret' : 'playAction';
                 if (this.checkAction(action, true)) {
                     var card_id = items[0].id;
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
                             id: card_id,
+                            direction: 1, // 0 = right, 1 = left
                             lock: true
                         },
                         this,

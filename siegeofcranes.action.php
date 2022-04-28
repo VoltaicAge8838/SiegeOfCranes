@@ -47,10 +47,11 @@ class action_siegeofcranes extends APP_GameAction
         self::ajaxResponse();
     }
 
-    public function playAttackAction() {
+    public function playFerret() {
         self::setAjaxMode();
         $card_id = self::getArg("id", AT_posint, true);
-        $this->game->playAttackAction($card_id);
+        $direction = self::getArg("direction", AT_posint, true);
+        $this->game->playFerret($card_id, $direction);
         self::ajaxResponse();
     }
 

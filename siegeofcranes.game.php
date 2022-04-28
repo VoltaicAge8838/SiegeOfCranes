@@ -34,7 +34,7 @@ class SiegeOfCranes extends Table
 
         self::initGameStateLabels( array(
                "target_action_card_id" => 10,
-            //    "my_second_global_variable" => 11,
+               "ferret_direction" => 11,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -298,7 +298,8 @@ class SiegeOfCranes extends Table
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
 
-        // and notify
+        self::setGameStateValue("target_action_card_id", $card_id);
+
         self::notifyAllPlayers(
             'playAction',
             clienttranslate('${player_name} plays ${type_displayed}'),
@@ -312,13 +313,52 @@ class SiegeOfCranes extends Table
             )
         );
 
-        self::setGameStateValue("target_action_card_id", $card_id);
-
         if ($this->card_types[$current_card['type']]['attack'] == 1) {
             $this->gamestate->nextState('waitForFoxes');
         } else {
             $this->gamestate->nextState('playAction');
         }
+    }
+
+    function playFerret($card_id, $direction) {
+        self::checkAction("playFerret");
+        $current_card = $this->cards->getCard($card_id);
+
+        if ($current_card['type'] != 6) {
+            $type = $current_card['type'];
+            throw new BgaUserException(self::_("Expected ferret card (type 6) but got type $type instead."));
+        }
+
+        if ($direction != 0 && $direction != 1) {
+            throw new BgaUserException(self::_("Invalid direction: $direction"));
+        }
+
+        $direction_name = 'left';
+        if ($direction == 0) {
+            $direction_name = 'right';
+        }
+
+        $player_id = self::getActivePlayerId();
+        $this->cards->moveCard($card_id, 'discard');
+
+        self::setGameStateValue("target_action_card_id", $card_id);
+        self::setGameStateValue("ferret_direction", $direction);
+
+        self::notifyAllPlayers(
+            'playAction',
+            clienttranslate('${player_name} plays ${type_displayed} and will have all players pass their hand to the ${direction}'),
+            array (
+                'i18n' => array('type_displayed'),
+                'card_id' => $card_id,
+                'player_id' => $player_id,
+                'player_name' => self::getActivePlayerName(),
+                'type' => $current_card['type'],
+                'type_displayed' => $this->card_types[$current_card['type']]['name'],
+                'direction' => $direction_name
+            )
+        );
+
+        $this->gamestate->nextState('waitForFoxes');
     }
 
     function playFox($card_id) {
@@ -487,6 +527,7 @@ class SiegeOfCranes extends Table
                 );
                 break;
             case 3: // kangaroo
+                $this->drawCards(2, $current_player_id, $current_player_name);
                 // TODO: move to state
                 break;
             case 4: // foxes
@@ -495,8 +536,35 @@ class SiegeOfCranes extends Table
                 // TODO: move to state
                 break;
             case 6: // ferrets
+                $direction = self::getGameStateValue("ferret_direction");
+                if ($direction == 0) { // 0 = right
+
+                } else { // left
+                    $players = self::loadPlayersBasicInfos();
+                    $prev_player_id = array_key_last($players);
+
+                    foreach ($players as $player_id => $player) {
+                        $this->cards->moveAllCardsInLocation('hand', 'temp', $prev_player_id);
+                        $this->cards->moveAllCardsInLocation('hand', 'hand', $player_id, $prev_player_id);
+                        $this->cards->moveAllCardsInLocation('temp', 'hand', null, $player_id);
+
+                        $cards = $this->cards->getCardsInLocation('hand', $player_id);
+
+                        self::notifyPlayer(
+                            $player_id,
+                            'playerDiscardAndDrawCards',
+                            clienttranslate('${player_name} passes their hand to the left'),
+                            array (
+                                'player_id' => $player_id,
+                                'player_name' => $player['player_name'],
+                                'cards' => $cards
+                            )
+                        );
+                    }
+                }
                 break;
             case 7: // crocodiles
+                $this->drawCards(2, $current_player_id, $current_player_name);
                 // TODO: move to state
                 break;
             case 8: // cranes
@@ -508,10 +576,8 @@ class SiegeOfCranes extends Table
                 $players = self::loadPlayersBasicInfos();
                 foreach ($players as $player_id => $player) {
                     $cards_to_draw = 1;
-                    $text = '${player_name} draws 1 card';
                     if ($player_id == $current_player_id) {
                         $cards_to_draw = 4;
-                        $text = '${player_name} draws 4 cards';
                     }
                     $this->drawCards($cards_to_draw, $player_id, $player['player_name']);
                 }
