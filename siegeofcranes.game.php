@@ -461,10 +461,6 @@ class SiegeOfCranes extends Table
     }
     */
 
-    function argGiveCards() {
-        return array();
-    }
-
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
 ////////////
@@ -538,16 +534,29 @@ class SiegeOfCranes extends Table
             case 6: // ferrets
                 $direction = self::getGameStateValue("ferret_direction");
                 $players = self::loadPlayersBasicInfos();
-                if ($direction == 0) { // 0 = right
-                    $players = array_reverse($players, true);
+
+                // rotate hands
+                if (count($players) == 2) {
+                    $first_player_id = array_key_first($players);
+                    $last_player_id = array_key_last($players);
+                    $this->cards->moveAllCardsInLocation('hand', 'temp', $first_player_id);
+                    $this->cards->moveAllCardsInLocation('hand', 'hand', $last_player_id, $first_player_id);
+                    $this->cards->moveAllCardsInLocation('temp', 'hand', null, $last_player_id);
+                } else {
+                    if ($direction == 0) { // 0 = right
+                        $players = array_reverse($players, true);
+                    }
+                    $prev_player_id = array_key_last($players);
+
+                    foreach ($players as $player_id => $player) {
+                        $this->cards->moveAllCardsInLocation('hand', 'temp', $prev_player_id);
+                        $this->cards->moveAllCardsInLocation('hand', 'hand', $player_id, $prev_player_id);
+                        $this->cards->moveAllCardsInLocation('temp', 'hand', null, $player_id);
+                    }
                 }
-                $prev_player_id = array_key_last($players);
 
+                // send notifications
                 foreach ($players as $player_id => $player) {
-                    $this->cards->moveAllCardsInLocation('hand', 'temp', $prev_player_id);
-                    $this->cards->moveAllCardsInLocation('hand', 'hand', $player_id, $prev_player_id);
-                    $this->cards->moveAllCardsInLocation('temp', 'hand', null, $player_id);
-
                     $cards = $this->cards->getCardsInLocation('hand', $player_id);
 
                     self::notifyPlayer(

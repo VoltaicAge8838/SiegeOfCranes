@@ -346,7 +346,7 @@ function (dojo, declare) {
             if (items.length === 1) {
                 var action = 'playAction';
                 var card_id = items[0].id;
-                if (items[0].type == 6) {
+                if (items[0].type == 6) { // if a ferret card
                     this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
                     this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
                     this.updatePageTitle();
