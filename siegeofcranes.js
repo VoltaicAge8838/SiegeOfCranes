@@ -30,6 +30,7 @@ function (dojo, declare) {
             this.cardheight = 143;
             this.iconwidth = 64;
             this.iconheight = 64;
+            this.backupdescriptionmyturn = '';
 
             // Here, you can init the global variables of your user interface
             // Example:
@@ -309,17 +310,55 @@ function (dojo, declare) {
 
         */
 
+        playFerret: function(card_id, direction) {
+            var action = 'playFerret';
+
+            if (this.checkAction(action, true)) {
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        id: card_id,
+                        direction: direction,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
+
+                this.playerHand.unselectAll();
+            } else {
+                this.playerHand.unselectAll();
+            }
+        },
+
+        cancelFerret: function() {
+            this.gamedatas.gamestate.descriptionmyturn = this.backupdescriptionmyturn;
+            this.updatePageTitle();
+            this.removeActionButtons();
+            this.addActionButton('playAction_button', _('Play Action'), 'playAction');
+            this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
+            this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
+        },
+
         playAction: function() {
             var items = this.playerHand.getSelectedItems();
             if (items.length === 1) {
-                var action = items[0].type == 6 ? 'playFerret' : 'playAction';
-                if (this.checkAction(action, true)) {
-                    var card_id = items[0].id;
+                var action = 'playAction';
+                var card_id = items[0].id;
+                if (items[0].type == 6) {
+                    this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
+                    this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
+                    this.updatePageTitle();
+                    this.removeActionButtons();
+                    this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 1));
+                    this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 0));
+                    this.addActionButton('cancelFerret_button', _('Cancel'), 'cancelFerret');
+                } else if (this.checkAction(action, true)) {
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
                             id: card_id,
-                            direction: 1, // 0 = right, 1 = left
                             lock: true
                         },
                         this,
