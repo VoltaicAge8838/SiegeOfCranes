@@ -346,29 +346,57 @@ function (dojo, declare) {
             if (items.length === 1) {
                 var action = 'playAction';
                 var card_id = items[0].id;
-                if (items[0].type == 6) { // if a ferret card
-                    this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
-                    this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
-                    this.updatePageTitle();
-                    this.removeActionButtons();
-                    this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 1));
-                    this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 0));
-                    this.addActionButton('cancelFerret_button', _('Cancel'), 'cancelFerret');
-                } else if (this.checkAction(action, true)) {
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            id: card_id,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(is_error) {}
-                    );
 
-                    this.playerHand.unselectAll();
-                } else {
-                    this.playerHand.unselectAll();
+                switch (items[0].type) {
+                    case "1": // rat card
+                        action = 'playRat';
+                        if (this.checkAction(action, true)) {
+                            var targets = [];
+                            for (playerId in this.playersCollection) {
+                                targets = targets.concat(this.playersCollection[playerId].getSelectedItems());
+                            }
+                            if (targets.length === 2) {
+                                this.ajaxcall(
+                                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                                    {
+                                        id: card_id,
+                                        target1_id: targets[0].id,
+                                        target2_id: targets[1].id,
+                                        lock: true
+                                    },
+                                    this,
+                                    function(result) {},
+                                    function(is_error) {}
+                                );
+                            }
+                        }
+                        this.playerHand.unselectAll();
+                        break;
+
+                    case "6": // ferret card
+                        this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
+                        this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
+                        this.updatePageTitle();
+                        this.removeActionButtons();
+                        this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 1));
+                        this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 0));
+                        this.addActionButton('cancelFerret_button', _('Cancel'), 'cancelFerret');
+                        break;
+
+                    default:
+                        if (this.checkAction(action, true)) {
+                            this.ajaxcall(
+                                "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                                {
+                                    id: card_id,
+                                    lock: true
+                                },
+                                this,
+                                function(result) {},
+                                function(is_error) {}
+                            );
+                        }
+                        this.playerHand.unselectAll();
                 }
             }
         },
@@ -483,6 +511,7 @@ function (dojo, declare) {
             //
 
             dojo.subscribe('addToCollection', this, "notif_addToCollection");
+            dojo.subscribe('swapCollectionCards', this, "notif_swapCollectionCards");
             dojo.subscribe('newScores', this, "notif_newScores");
             dojo.subscribe('drawCards', this, "notif_noOp");
             this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
@@ -513,6 +542,47 @@ function (dojo, declare) {
 
         notif_addToCollection: function(notif) {
             this.addCardToCollection(notif.args.player_id, notif.args.type, notif.args.card_id);
+        },
+
+        notif_swapCollectionCards: function(notif) {
+            t1PlayerId = notif.args.target1_player_id;
+            t2PlayerId = notif.args.target2_player_id;
+            t1cardId = notif.args.target1_card_id;
+            t2cardId = notif.args.target2_card_id;
+            t1cardType = notif.args.target1_card_type;
+            t2cardType = notif.args.target2_card_type;
+
+            this.playersCollection[t1PlayerId].removeFromStockById(t1cardId);
+            this.slideTemporaryObject(
+                this.format_block(
+                    'jstpl_cardontable',
+                    {
+                        x: this.cardwidth * ((t1cardType - 1) % 5),
+                        y: this.cardheight * Math.floor((t1cardType - 1) / 5),
+                        card_id: t1cardId
+                    }
+                ),
+                'playercollection_' + t2PlayerId,
+                'playercollection_' + t1PlayerId,
+                'playercollection_' + t2PlayerId
+            ).play();
+            this.playersCollection[t2PlayerId].addToStockWithId(t1cardType, t1cardId);
+
+            this.playersCollection[t2PlayerId].removeFromStockById(t2cardId);
+            this.slideTemporaryObject(
+                this.format_block(
+                    'jstpl_cardontable',
+                    {
+                        x: this.cardwidth * ((t2cardType - 1) % 5),
+                        y: this.cardheight * Math.floor((t2cardType - 1) / 5),
+                        card_id: t2cardId
+                    }
+                ),
+                'playercollection_' + t1PlayerId,
+                'playercollection_' + t2PlayerId,
+                'playercollection_' + t1PlayerId
+            ).play();
+            this.playersCollection[t1PlayerId].addToStockWithId(t2cardType, t2cardId);
         },
 
         notif_newScores: function(notif) {

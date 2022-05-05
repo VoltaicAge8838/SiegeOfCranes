@@ -55,6 +55,15 @@ class action_siegeofcranes extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function playRat() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $target1_id = self::getArg("target1_id", AT_posint, true);
+        $target2_id = self::getArg("target2_id", AT_posint, true);
+        $this->game->playRat($card_id, $target1_id, $target2_id);
+        self::ajaxResponse();
+    }
+
     public function addToCollection() {
         self::setAjaxMode();
         $card_id = self::getArg("id", AT_posint, true);

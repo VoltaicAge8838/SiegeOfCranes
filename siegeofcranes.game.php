@@ -35,6 +35,8 @@ class SiegeOfCranes extends Table
         self::initGameStateLabels( array(
                "target_action_card_id" => 10,
                "ferret_direction" => 11,
+               "rat_target_id1" => 12,
+               "rat_target_id2" => 13,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -361,6 +363,54 @@ class SiegeOfCranes extends Table
         $this->gamestate->nextState('waitForFoxes');
     }
 
+    function playRat($card_id, $target1_id, $target2_id) {
+        self::checkAction("playRat");
+        $current_card = $this->cards->getCard($card_id);
+
+        if ($current_card['type'] != 1) {
+            $type = $current_card['type'];
+            throw new BgaUserException(self::_("Expected rat card (type 1) but got type $type instead."));
+        }
+
+        $target1_card = $this->cards->getCard($target1_id);
+        $target2_card = $this->cards->getCard($target2_id);
+
+        //Invalid cards supplied. collections: 2363182, collections: 2363183
+
+        if ($target1_card['location'] != 'collections'
+                || $target2_card['location'] != 'collections'
+                || $target1_card['location_arg'] == $target2_card['location_arg']) {
+            throw new BgaUserException(self::_("Invalid cards supplied."));
+        }
+
+        $player_id = self::getActivePlayerId();
+        $players = self::loadPlayersBasicInfos();
+        $this->cards->moveCard($card_id, 'discard');
+
+        self::setGameStateValue("target_action_card_id", $card_id);
+        self::setGameStateValue("rat_target_id1", $target1_id);
+        self::setGameStateValue("rat_target_id2", $target2_id);
+
+        self::notifyAllPlayers(
+            'playAction',
+            clienttranslate('${player_name} plays ${card_name} and will swap ${target1_player_name}\'s ${target1_card_name} with ${target2_player_name}\'s ${target2_card_name}'),
+            array (
+                'i18n' => array('card_name'),
+                'player_id' => $player_id,
+                'type' => $current_card['type'],
+                'card_id' => $card_id,
+                'player_name' => self::getActivePlayerName(),
+                'card_name' => $this->card_types[$current_card['type']]['name'],
+                'target1_player_name' => $players[$target1_card['location_arg']]['player_name'],
+                'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
+                'target2_player_name' => $players[$target2_card['location_arg']]['player_name'],
+                'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
+            )
+        );
+
+        $this->gamestate->nextState('waitForFoxes');
+    }
+
     function playFox($card_id) {
         self::checkAction("playFox");
         $player_id = self::getCurrentPlayerId();
@@ -498,7 +548,38 @@ class SiegeOfCranes extends Table
 
         switch ($currentCard['type']) {
             case 1: // rats
-                // move to state
+                $target1_id = self::getGameStateValue("rat_target_id1");
+                $target2_id = self::getGameStateValue("rat_target_id2");
+                $target1_card = $this->cards->getCard($target1_id);
+                $target2_card = $this->cards->getCard($target2_id);
+                $player1_id = $target1_card['location_arg'];
+                $player2_id = $target2_card['location_arg'];
+
+                $this->cards->moveCard($target1_id, 'collections', $player2_id);
+                $this->cards->moveCard($target2_id, 'collections', $player1_id);
+
+                $players = self::loadPlayersBasicInfos();
+
+                self::notifyAllPlayers(
+                    'swapCollectionCards',
+                    clienttranslate('${target1_player_name}\'s ${target1_card_name} swapped with ${target2_player_name}\'s ${target2_card_name}'),
+                    array (
+                        'i18n' => array('target1_player_name', 'target1_card_name' ,'target2_player_name' ,'target2_card_name'),
+                        'target1_player_name' => $players[$player1_id]['player_name'],
+                        'target1_player_id' => $player1_id,
+                        'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
+                        'target1_card_id' => $target1_id,
+                        'target1_card_type' => $target1_card['type'],
+                        'target2_player_name' => $players[$player2_id]['player_name'],
+                        'target2_player_id' => $player2_id,
+                        'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
+                        'target2_card_id' => $target2_id,
+                        'target2_card_type' => $target2_card['type']
+                    )
+                );
+
+                $this->updateScores();
+
                 break;
             case 2: // pandas
                 $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
