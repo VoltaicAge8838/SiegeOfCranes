@@ -66,8 +66,9 @@ class action_siegeofcranes extends APP_GameAction
 
     public function addToCollection() {
         self::setAjaxMode();
-        $card_id = self::getArg("id", AT_posint, true);
-        $this->game->addToCollection($card_id);
+        $raw_card_ids = self::getArg("ids", AT_numberlist, true);
+        $card_ids = explode( ',', $raw_card_ids );
+        $this->game->addToCollection($card_ids);
         self::ajaxResponse();
     }
 

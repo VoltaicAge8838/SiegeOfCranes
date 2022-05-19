@@ -68,12 +68,12 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} must play a card or pass'),
         "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
         "type" => "activeplayer",
-        "possibleactions" => array("playAction", "playFerret", "playRat", "addToCollection", "drawCards"),
+        "possibleactions" => array("playAction", "playFerret", "playRat", "startCollecting", "addToCollection", "drawCards"),
         "transitions" => array(
             "playAction" => 4,
             "waitForFoxes" => 5,
             "addToCollection" => 7,
-            "nextPlayer" => 3,
+            "nextPlayer" => 3
         )
     ),
 
@@ -93,7 +93,9 @@ $machinestates = array(
         "type" => "game",
         "action" => "stPerformAction",
         "transitions" => array(
-            "nextPlayer" => 3
+            "nextPlayer" => 3,
+            "selectMultipleCardsToCollect" => 8,
+            "selectCardToCollect" => 9,
         )
     ),
 
@@ -131,6 +133,30 @@ $machinestates = array(
         "transitions" => array(
             "playCrane" => 5,
             "passCrane" => 3
+        )
+    ),
+
+    8 => array(
+        "name" => "selectMultipleCardsToCollect",
+        "description" => clienttranslate('${actplayer} must choose cards to collect'),
+        "descriptionmyturn" => clienttranslate('${you} must choose cards to collect'),
+        "type" => "activeplayer",
+        "possibleactions" => array("addToCollection"),
+        "transitions" => array(
+            "addToCollection" => 7,
+            "nextPlayer" => 3, // TODO: remove this
+        )
+    ),
+
+    9 => array(
+        "name" => "selectCardToCollect",
+        "description" => clienttranslate('${actplayer} must choose a card to collect'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card to collect'),
+        "type" => "activeplayer",
+        "possibleactions" => array("addToCollection"),
+        "transitions" => array(
+            "addToCollection" => 7,
+            "nextPlayer" => 3, // TODO: remove this
         )
     ),
 

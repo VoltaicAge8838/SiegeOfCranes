@@ -31,6 +31,7 @@ function (dojo, declare) {
             this.iconwidth = 64;
             this.iconheight = 64;
             this.backupdescriptionmyturn = '';
+            this.isCoyoteState = true;
 
             // Here, you can init the global variables of your user interface
             // Example:
@@ -168,6 +169,12 @@ function (dojo, declare) {
                     case 'waitForRedoFoxes':
                         this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
                         this.addActionButton('passFox_button', _('Pass'), 'passFox');
+                        break;
+
+                    case 'selectMultipleCardsToCollect':
+                        this.isCoyoteState = true;
+                    case 'selectCardToCollect':
+                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
                         break;
 
 /*
@@ -401,16 +408,27 @@ function (dojo, declare) {
             }
         },
 
+        isCoyoteSelection: function(items) {
+            if (!this.isCoyoteState) {
+                return false;
+            }
+            if (items.length === 0) {
+                return false;
+            }
+            var type = items[0].type;
+            return items.every(item => item.type === type);
+        },
+
         addToCollection: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 1) {
+            if (items.length === 1 || this.isCoyoteSelection(items)) {
                 var action = 'addToCollection';
                 if (this.checkAction(action, true)) {
-                    var card_id = items[0].id;
+                    var card_ids = items.map(item => item.id).join(',');
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
-                            id: card_id,
+                            ids: card_ids,
                             lock: true
                         },
                         this,
@@ -422,6 +440,8 @@ function (dojo, declare) {
                 } else {
                     this.playerHand.unselectAll();
                 }
+            } else {
+                this.showMessage('Cannot add selected cards to hand', 'error');
             }
         },
 
@@ -541,7 +561,9 @@ function (dojo, declare) {
         */
 
         notif_addToCollection: function(notif) {
-            this.addCardToCollection(notif.args.player_id, notif.args.type, notif.args.card_id);
+            notif.args.card_ids.forEach(card_id => {
+                this.addCardToCollection(notif.args.player_id, notif.args.type, card_id);
+            });
         },
 
         notif_swapCollectionCards: function(notif) {

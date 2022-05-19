@@ -453,26 +453,36 @@ class SiegeOfCranes extends Table
         $this->gamestate->setPlayerNonMultiactive($player_id, 'passFox');
     }
 
-    function addToCollection($card_id) {
+    function addToCollection($card_ids) {
         self::checkAction("addToCollection");
         $player_id = self::getActivePlayerId();
-        $this->cards->moveCard($card_id, 'collections', $player_id);
-        $currentCard = $this->cards->getCard($card_id);
+
+        $cardType = $this->cards->getCard($card_ids[array_key_first($card_ids)])['type'];
+        foreach ($card_ids as $id) {
+            if ($cardType != $this->cards->getCard($id)['type']) {
+                throw new BgaUserException(self::_("Collected cards must all be of the same type."));
+            }
+        }
+
+        foreach ($card_ids as $id) {
+            $this->cards->moveCard($id, 'collections', $player_id);
+        }
+
         // notify collected card
         self::notifyAllPlayers(
             'addToCollection',
             clienttranslate('${player_name} adds ${type_displayed} to their collection'),
             array (
                 'i18n' => array('type_displayed'),
-                'card_id' => $card_id,
+                'card_ids' => $card_ids,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
-                'type' => $currentCard['type'],
-                'type_displayed' => $this->card_types[$currentCard['type']]['name']
+                'type' => $cardType,
+                'type_displayed' => $this->card_types[$cardType]['name']
             )
         );
         $this->updateScores();
-        // next player
+        // TODO: change to siege check
         $this->gamestate->nextState('nextPlayer');
     }
 
@@ -579,7 +589,7 @@ class SiegeOfCranes extends Table
                 );
 
                 $this->updateScores();
-
+                $this->gamestate->nextState('nextPlayer');
                 break;
             case 2: // pandas
                 $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
@@ -602,15 +612,18 @@ class SiegeOfCranes extends Table
                         'cards' => $cards
                     )
                 );
+                $this->gamestate->nextState('nextPlayer');
                 break;
             case 3: // kangaroo
                 $this->drawCards(2, $current_player_id, $current_player_name);
                 // TODO: move to state
+                $this->gamestate->nextState('nextPlayer');
                 break;
             case 4: // foxes
                 throw new BgaVisibleSystemException ('Attempted to perform action for a Fox card.');
             case 5: // finches
                 // TODO: move to state
+                $this->gamestate->nextState('nextPlayer');
                 break;
             case 6: // ferrets
                 $direction = self::getGameStateValue("ferret_direction");
@@ -651,15 +664,16 @@ class SiegeOfCranes extends Table
                         )
                     );
                 }
+                $this->gamestate->nextState('nextPlayer');
                 break;
             case 7: // crocodiles
                 $this->drawCards(2, $current_player_id, $current_player_name);
-                // TODO: move to state
+                $this->gamestate->nextState('selectCardToCollect');
                 break;
             case 8: // cranes
                 throw new BgaVisibleSystemException ('Attempted to perform action for a Crain card.');
             case 9: // coyotes
-                // TODO: move to state
+                $this->gamestate->nextState('selectMultipleCardsToCollect');
                 break;
             case 10: // jays
                 $players = self::loadPlayersBasicInfos();
@@ -670,17 +684,12 @@ class SiegeOfCranes extends Table
                     }
                     $this->drawCards($cards_to_draw, $player_id, $player['player_name']);
                 }
+                $this->gamestate->nextState('nextPlayer');
                 break;
             default:
                 $type = $currentCard['type'];
                 throw new BgaVisibleSystemException ("Attempted to perform action for an unknown card type: $type.");
         }
-
-        $this->gamestate->nextState('nextPlayer');
-    }
-
-    function stAddToCollection() {
-        $this->gamestate->nextState('nextPlayer');
     }
 
     function stMultiPlayerInit() {
