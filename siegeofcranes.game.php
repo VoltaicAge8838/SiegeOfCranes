@@ -692,8 +692,11 @@ class SiegeOfCranes extends Table
         }
     }
 
-    function stMultiPlayerInit() {
-        $this->gamestate->setAllPlayersMultiactive();
+    function stAnyOtherPlayerInit() {
+        // $this->gamestate->setAllPlayersMultiactive();
+        $players = self::loadPlayersBasicInfos();
+        unset($players[self::getCurrentPlayerId()]);
+        $this->gamestate->setPlayersMultiactive(array_keys($players), 'none', true);
     }
 
 //////////////////////////////////////////////////////////////////////////////

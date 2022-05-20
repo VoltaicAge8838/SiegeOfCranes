@@ -109,7 +109,7 @@ $machinestates = array(
             "playFox" => 6,
             "passFox" => 4
         ),
-        "action" => "stMultiPlayerInit"
+        "action" => "stAnyOtherPlayerInit"
     ),
 
     6 => array(
@@ -122,7 +122,7 @@ $machinestates = array(
             "playFox" => 5,
             "passFox" => 3
         ),
-        "action" => "stMultiPlayerInit"
+        "action" => "stAnyOtherPlayerInit"
     ),
 
     7 => array(
