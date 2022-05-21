@@ -91,6 +91,14 @@ class action_siegeofcranes extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function discardCards() {
+        self::setAjaxMode();
+        $raw_card_ids = self::getArg("ids", AT_numberlist, true);
+        $card_ids = explode( ',', $raw_card_ids );
+        $this->game->discardKangarooCards($card_ids);
+        self::ajaxResponse();
+    }
+
 
     /*
 

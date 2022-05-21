@@ -37,6 +37,7 @@ class SiegeOfCranes extends Table
                "ferret_direction" => 11,
                "rat_target_id1" => 12,
                "rat_target_id2" => 13,
+               "kangaroo_player_id" => 14,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -486,6 +487,49 @@ class SiegeOfCranes extends Table
         $this->gamestate->nextState('nextPlayer');
     }
 
+    function discardKangarooCards($card_ids) {
+        self::checkAction("discardCards");
+        $player_id = self::getCurrentPlayerId();
+        $player_cards = $this->cards->getCardsInLocation('hand', $player_id);
+
+        $discard_cards = array();
+        $types = array();
+
+        foreach ($card_ids as $key => $id) {
+            if (array_key_exists($id, $player_cards)) {
+                array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
+                array_push($types, $player_cards[$id]['type']);
+                unset($player_cards[$id]);
+            } else {
+                unset($card_ids[$key]);
+            }
+        }
+
+        if (3 < count($player_cards)) {
+            throw new BgaUserException(self::_("Wrong number of cards selected to discard."));
+        }
+
+        foreach ($card_ids as $id) {
+            $this->cards->moveCard($id, 'discard');
+        }
+
+        $types_string = implode(', ', $types);
+
+        self::notifyAllPlayers(
+            'discardKangarooCards',
+            clienttranslate('${player_name} discards ${types_string}'),
+            array (
+                'i18n' => array('types_string'),
+                'cards' => $discard_cards,
+                'player_id' => $player_id,
+                'player_name' => self::getCurrentPlayerName(),
+                'types_string' => $types_string
+            )
+        );
+
+        $this->gamestate->setPlayerNonMultiactive($player_id, 'nextPlayer');
+    }
+
     function drawCardsAction() {
         self::checkAction("drawCards");
         $this->drawCards(2, self::getActivePlayerId(), self::getActivePlayerName());
@@ -616,8 +660,8 @@ class SiegeOfCranes extends Table
                 break;
             case 3: // kangaroo
                 $this->drawCards(2, $current_player_id, $current_player_name);
-                // TODO: move to state
-                $this->gamestate->nextState('nextPlayer');
+                self::setGameStateValue("kangaroo_player_id", $current_player_id);
+                $this->gamestate->nextState('kangarooDiscard');
                 break;
             case 4: // foxes
                 throw new BgaVisibleSystemException ('Attempted to perform action for a Fox card.');
@@ -692,10 +736,16 @@ class SiegeOfCranes extends Table
         }
     }
 
-    function stAnyOtherPlayerInit() {
+    function stAllOtherPlayersInit() {
         // $this->gamestate->setAllPlayersMultiactive();
         $players = self::loadPlayersBasicInfos();
         unset($players[self::getCurrentPlayerId()]);
+        $this->gamestate->setPlayersMultiactive(array_keys($players), 'none', true);
+    }
+
+    function stAllNonkangarooPlayersInit() {
+        $players = self::loadPlayersBasicInfos();
+        unset($players[self::getGameStateValue("kangaroo_player_id")]);
         $this->gamestate->setPlayersMultiactive(array_keys($players), 'none', true);
     }
 

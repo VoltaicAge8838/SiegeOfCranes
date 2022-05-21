@@ -177,6 +177,10 @@ function (dojo, declare) {
                         this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
                         break;
 
+                    case 'kangarooDiscard':
+                        this.addActionButton('discardCards_button', _('Discard Cards'), 'discardCards');
+                        break;
+
 /*
                  Example:
 
@@ -445,6 +449,28 @@ function (dojo, declare) {
             }
         },
 
+        discardCards: function() {
+            var items = this.playerHand.getSelectedItems();
+            var action = 'discardCards';
+            if (this.checkAction(action, true)) {
+                var card_ids = items.map(item => item.id).join(',');
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        ids: card_ids,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
+
+                this.playerHand.unselectAll();
+            } else {
+                this.playerHand.unselectAll();
+            }
+        },
+
         drawCards: function() {
             var action = 'drawCards';
             if (this.checkAction(action, true)) {
@@ -541,6 +567,7 @@ function (dojo, declare) {
             dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
+            dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -631,6 +658,13 @@ function (dojo, declare) {
 
         notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
+        },
+
+        notif_discardCards: function(notif) {
+            for (var card in notif.args.cards) {
+                console.log('card', notif.args.cards[card]);
+                this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id);
+            }
         },
    });
 });

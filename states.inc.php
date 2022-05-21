@@ -96,6 +96,7 @@ $machinestates = array(
             "nextPlayer" => 3,
             "selectMultipleCardsToCollect" => 8,
             "selectCardToCollect" => 9,
+            "kangarooDiscard" => 10,
         )
     ),
 
@@ -109,7 +110,7 @@ $machinestates = array(
             "playFox" => 6,
             "passFox" => 4
         ),
-        "action" => "stAnyOtherPlayerInit"
+        "action" => "stAllOtherPlayersInit"
     ),
 
     6 => array(
@@ -122,12 +123,12 @@ $machinestates = array(
             "playFox" => 5,
             "passFox" => 3
         ),
-        "action" => "stAnyOtherPlayerInit"
+        "action" => "stAllOtherPlayersInit"
     ),
 
     7 => array(
         "name" => "waitForCranes",
-        "description" => clienttranslate('${you} may play a Fox or pass'),
+        "description" => clienttranslate('${you} may play a Crane or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playCrane", "passCrane"),
         "transitions" => array(
@@ -158,6 +159,18 @@ $machinestates = array(
             "addToCollection" => 7,
             "nextPlayer" => 3, // TODO: remove this
         )
+    ),
+
+    10 => array(
+        "name" => "kangarooDiscard",
+        "description" => clienttranslate('Other players must discard down to 3 cards'),
+        "descriptionmyturn" => clienttranslate('${you} must discard down to 3 cards'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("discardCards"),
+        "transitions" => array(
+            "nextPlayer" => 3
+        ),
+        "action" => "stAllNonkangarooPlayersInit"
     ),
 
     // Final state.
