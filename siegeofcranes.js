@@ -181,6 +181,10 @@ function (dojo, declare) {
                         this.addActionButton('discardCards_button', _('Discard Cards'), 'discardCards');
                         break;
 
+                    case 'giveCards':
+                        this.addActionButton('giveCards_button', _('Give Cards'), 'giveCards');
+                        break;
+
 /*
                  Example:
 
@@ -384,6 +388,36 @@ function (dojo, declare) {
                         this.playerHand.unselectAll();
                         break;
 
+                    case "5": // finch card
+                        var playerIds = [];
+                        var playerNames = [];
+                        for (var player_id in this.gamedatas.players) {
+                            if (player_id != this.player_id) {
+                                playerIds.push(player_id);
+                                playerNames.push(this.gamedatas.players[player_id].name);
+                            }
+                        }
+                        this.multipleChoiceDialog(
+                            _('Pick a player to give you two cards'),
+                            playerNames,
+                            (choice) => {
+                                var giver_id = playerIds[choice];
+                                console.log('dialog callback with '+ giver_id);
+                                this.ajaxcall(
+                                    "/" + this.game_name + "/" +this.game_name + "/playFinch.html",
+                                    {
+                                        id: card_id,
+                                        giver_id: giver_id,
+                                        lock: true
+                                    },
+                                    this,
+                                    function(result) {},
+                                    function(is_error) {}
+                                );
+                            }
+                        );
+                        break;
+
                     case "6": // ferret card
                         this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
                         this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
@@ -471,6 +505,28 @@ function (dojo, declare) {
             }
         },
 
+        giveCards: function() {
+            var items = this.playerHand.getSelectedItems();
+            if (items.length === 2) {
+                var action = 'giveCards';
+                if (this.checkAction(action, true)) {
+                    this.ajaxcall(
+                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                        {
+                            target1_id: items[0].id,
+                            target2_id: items[1].id,
+                            lock: true
+                        },
+                        this,
+                        function(result) {},
+                        function(is_error) {}
+                    );
+                }
+                this.playerHand.unselectAll();
+            } else {
+                this.showMessage('Incorrect number of cards selected', 'error');
+            }
+        },
         drawCards: function() {
             var action = 'drawCards';
             if (this.checkAction(action, true)) {
@@ -568,6 +624,10 @@ function (dojo, declare) {
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
             dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
+            dojo.subscribe('giveCards', this, "notif_noOp");
+            this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
+            dojo.subscribe('playerGiveCards', this, "notif_discardCards");
+            dojo.subscribe('playerReceiveCards', this, "notif_playerDrawCards");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods

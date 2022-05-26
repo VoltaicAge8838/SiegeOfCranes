@@ -99,6 +99,22 @@ class action_siegeofcranes extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function playFinch() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $giver_id = self::getArg("giver_id", AT_posint, true);
+        $this->game->playFinch($card_id, $giver_id);
+        self::ajaxResponse();
+    }
+
+    public function giveCards() {
+        self::setAjaxMode();
+        $target1_id = self::getArg("target1_id", AT_posint, true);
+        $target2_id = self::getArg("target2_id", AT_posint, true);
+        $this->game->giveCards($target1_id, $target2_id);
+        self::ajaxResponse();
+    }
+
 
     /*
 

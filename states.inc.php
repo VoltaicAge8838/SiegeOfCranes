@@ -68,7 +68,7 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} must play a card or pass'),
         "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
         "type" => "activeplayer",
-        "possibleactions" => array("playAction", "playFerret", "playRat", "startCollecting", "addToCollection", "drawCards"),
+        "possibleactions" => array("playAction", "playFerret", "playRat", "startCollecting", "addToCollection", "drawCards", "playFinch"),
         "transitions" => array(
             "playAction" => 4,
             "waitForFoxes" => 5,
@@ -97,6 +97,7 @@ $machinestates = array(
             "selectMultipleCardsToCollect" => 8,
             "selectCardToCollect" => 9,
             "kangarooDiscard" => 10,
+            "giveCards" => 11,
         )
     ),
 
@@ -171,6 +172,18 @@ $machinestates = array(
             "nextPlayer" => 3
         ),
         "action" => "stAllNonkangarooPlayersInit"
+    ),
+
+    11 => array(
+        "name" => "giveCards",
+        "description" => clienttranslate('Another player must choose 2 cards to give'),
+        "descriptionmyturn" => clienttranslate('${you} must choose 2 cards to give'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("giveCards"),
+        "transitions" => array(
+            "nextPlayer" => 3
+        ),
+        "action" => "stFinchPlayerInit"
     ),
 
     // Final state.

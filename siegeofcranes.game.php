@@ -37,7 +37,8 @@ class SiegeOfCranes extends Table
                "ferret_direction" => 11,
                "rat_target_id1" => 12,
                "rat_target_id2" => 13,
-               "kangaroo_player_id" => 14,
+               "card_player_id" => 14,
+               "target_player_id" => 15,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -139,7 +140,7 @@ class SiegeOfCranes extends Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score FROM player ";
+        $sql = "SELECT player_id id, player_name name, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -412,6 +413,89 @@ class SiegeOfCranes extends Table
         $this->gamestate->nextState('waitForFoxes');
     }
 
+    function playFinch($card_id, $giver_id) {
+        self::checkAction("playFinch");
+        $current_card = $this->cards->getCard($card_id);
+
+        if ($current_card['type'] != 5) {
+            $type = $current_card['type'];
+            throw new BgaUserException(self::_("Expected finch card (type 5) but got type $type instead."));
+        }
+
+        $player_id = self::getActivePlayerId();
+        $players = self::loadPlayersBasicInfos();
+        $this->cards->moveCard($card_id, 'discard');
+
+        self::setGameStateValue("target_action_card_id", $card_id);
+        self::setGameStateValue("card_player_id", $player_id);
+        self::setGameStateValue("target_player_id", $giver_id);
+
+        self::notifyAllPlayers(
+            'playAction',
+            clienttranslate('${player_name} plays ${card_name} to receive two cards from ${target_player_name}'),
+            array (
+                'i18n' => array('card_name'),
+                'player_id' => $player_id,
+                'type' => $current_card['type'],
+                'card_id' => $card_id,
+                'player_name' => self::getActivePlayerName(),
+                'card_name' => $this->card_types[$current_card['type']]['name'],
+                'target_player_name' => $players[$giver_id]['player_name'],
+            )
+        );
+
+        $this->gamestate->nextState('waitForFoxes');
+    }
+
+    function giveCards($target1_id, $target2_id) {
+        self::checkAction("giveCards");
+
+        $receiver_id = self::getGameStateValue("card_player_id");
+        $giver_id = self::getGameStateValue("target_player_id");
+        $players = self::loadPlayersBasicInfos();
+
+        $this->cards->moveCard($target1_id, 'hand', $receiver_id);
+        $this->cards->moveCard($target2_id, 'hand', $receiver_id);
+
+        self::notifyAllPlayers(
+            'giveCards',
+            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            array (
+                'giver_id' => $giver_id,
+                'giver_name' => $players[$giver_id]['player_name'],
+                'reciever_id' => $receiver_id,
+                'reciever_name' => $players[$receiver_id]['player_name'],
+            )
+        );
+
+        $target1_card = $this->cards->getCard($target1_id);
+        $target2_card = $this->cards->getCard($target2_id);
+
+        self::notifyPlayer(
+            $giver_id,
+            'playerGiveCards',
+            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            array (
+                'giver_name' => $players[$giver_id]['player_name'],
+                'reciever_name' => $players[$receiver_id]['player_name'],
+                'cards' => array($target1_card,$target2_card)
+            )
+        );
+
+        self::notifyPlayer(
+            $receiver_id,
+            'playerReceiveCards',
+            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            array (
+                'giver_name' => $players[$giver_id]['player_name'],
+                'reciever_name' => $players[$receiver_id]['player_name'],
+                'cards' => array($target1_card, $target2_card)
+            )
+        );
+
+        $this->gamestate->nextState('nextPlayer');
+    }
+
     function playFox($card_id) {
         self::checkAction("playFox");
         $player_id = self::getCurrentPlayerId();
@@ -660,14 +744,13 @@ class SiegeOfCranes extends Table
                 break;
             case 3: // kangaroo
                 $this->drawCards(2, $current_player_id, $current_player_name);
-                self::setGameStateValue("kangaroo_player_id", $current_player_id);
+                self::setGameStateValue("card_player_id", $current_player_id);
                 $this->gamestate->nextState('kangarooDiscard');
                 break;
             case 4: // foxes
                 throw new BgaVisibleSystemException ('Attempted to perform action for a Fox card.');
             case 5: // finches
-                // TODO: move to state
-                $this->gamestate->nextState('nextPlayer');
+                $this->gamestate->nextState('giveCards');
                 break;
             case 6: // ferrets
                 $direction = self::getGameStateValue("ferret_direction");
@@ -745,8 +828,12 @@ class SiegeOfCranes extends Table
 
     function stAllNonkangarooPlayersInit() {
         $players = self::loadPlayersBasicInfos();
-        unset($players[self::getGameStateValue("kangaroo_player_id")]);
+        unset($players[self::getGameStateValue("card_player_id")]);
         $this->gamestate->setPlayersMultiactive(array_keys($players), 'none', true);
+    }
+
+    function stFinchPlayerInit() {
+        $this->gamestate->setPlayersMultiactive(array(self::getGameStateValue("target_player_id")), 'none', true);
     }
 
 //////////////////////////////////////////////////////////////////////////////
