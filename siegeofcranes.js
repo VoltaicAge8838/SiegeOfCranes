@@ -185,6 +185,11 @@ function (dojo, declare) {
                         this.addActionButton('giveCards_button', _('Give Cards'), 'giveCards');
                         break;
 
+                    case 'waitForCranes':
+                        this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
+                        this.addActionButton('passCrane_button', _('Pass'), 'passCrane');
+                        break;
+
 /*
                  Example:
 
@@ -254,6 +259,25 @@ function (dojo, declare) {
                 source_id = 'myhand_item_' + card_id;
                 this.playerHand.removeFromStockById(card_id);
             }
+            this.slideTemporaryObject(
+                this.format_block(
+                    'jstpl_cardontable',
+                    {
+                        x: this.cardwidth * ((type - 1) % 5),
+                        y: this.cardheight * Math.floor((type - 1) / 5),
+                        card_id: card_id
+                    }
+                ),
+                'discard',
+                source_id,
+                'discard'
+            ).play();
+        },
+
+        discardCollectedCard: function(player_id, type, card_id) {
+            console.log('discardCard', player_id, type, card_id);
+            var source_id = 'playercollection_' + player_id;
+            this.playersCollection[player_id].removeFromStockById(card_id);
             this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
@@ -583,6 +607,46 @@ function (dojo, declare) {
             }
         },
 
+        playCrane: function() {
+            var items = this.playerHand.getSelectedItems();
+            if (items.length === 1) {
+                var action = 'playCrane';
+                if (this.checkAction(action, true)) {
+                    var card_id = items[0].id;
+                    this.ajaxcall(
+                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                        {
+                            id: card_id,
+                            lock: true
+                        },
+                        this,
+                        function(result) {},
+                        function(is_error) {}
+                    );
+
+                    this.playerHand.unselectAll();
+                } else {
+                    this.playerHand.unselectAll();
+                }
+            }
+        },
+
+        passCrane: function() {
+            var action = 'passCrane';
+            if (this.checkAction(action, true)) {
+                this.ajaxcall(
+                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                    {
+                        id: 1,
+                        lock: true
+                    },
+                    this,
+                    function(result) {},
+                    function(is_error) {}
+                );
+            }
+        },
+
 
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -623,6 +687,7 @@ function (dojo, declare) {
             dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
+            dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
             dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
             dojo.subscribe('giveCards', this, "notif_noOp");
             this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
@@ -722,8 +787,14 @@ function (dojo, declare) {
 
         notif_discardCards: function(notif) {
             for (var card in notif.args.cards) {
-                console.log('card', notif.args.cards[card]);
                 this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id);
+            }
+        },
+
+        notif_discardCollectedCards: function(notif) {
+            console.log('cards', notif.args.cards);
+            for (var card in notif.args.cards) {
+                this.discardCollectedCard(notif.args.cards[card].location_arg, notif.args.cards[card].type, notif.args.cards[card].id);
             }
         },
    });

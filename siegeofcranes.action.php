@@ -91,6 +91,19 @@ class action_siegeofcranes extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function playCrane() {
+        self::setAjaxMode();
+        $card_id = self::getArg("id", AT_posint, true);
+        $this->game->playCrane($card_id);
+        self::ajaxResponse();
+    }
+
+    public function passCrane() {
+        self::setAjaxMode();
+        $this->game->passCrane();
+        self::ajaxResponse();
+    }
+
     public function discardCards() {
         self::setAjaxMode();
         $raw_card_ids = self::getArg("ids", AT_numberlist, true);

@@ -129,13 +129,15 @@ $machinestates = array(
 
     7 => array(
         "name" => "waitForCranes",
-        "description" => clienttranslate('${you} may play a Crane or pass'),
+        "description" => clienttranslate('Other players may play a Crane or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Crane or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playCrane", "passCrane"),
         "transitions" => array(
             "playCrane" => 5,
             "passCrane" => 3
-        )
+        ),
+        "action" => "stAllOtherPlayersInit"
     ),
 
     8 => array(
@@ -146,7 +148,6 @@ $machinestates = array(
         "possibleactions" => array("addToCollection"),
         "transitions" => array(
             "addToCollection" => 7,
-            "nextPlayer" => 3, // TODO: remove this
         )
     ),
 
@@ -158,7 +159,6 @@ $machinestates = array(
         "possibleactions" => array("addToCollection"),
         "transitions" => array(
             "addToCollection" => 7,
-            "nextPlayer" => 3, // TODO: remove this
         )
     ),
 

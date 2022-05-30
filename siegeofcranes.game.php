@@ -39,6 +39,17 @@ class SiegeOfCranes extends Table
                "rat_target_id2" => 13,
                "card_player_id" => 14,
                "target_player_id" => 15,
+               "collected_card_length" => 16,
+               "collected_card_id0" => 17,
+               "collected_card_id1" => 18,
+               "collected_card_id2" => 19,
+               "collected_card_id3" => 20,
+               "collected_card_id4" => 21,
+               "collected_card_id5" => 22,
+               "collected_card_id6" => 23,
+               "collected_card_id7" => 24,
+               "collected_card_id8" => 25,
+               "collected_card_id9" => 26,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -108,9 +119,8 @@ class SiegeOfCranes extends Table
         }
         $this->cards->createCards($cards, 'deck');
 
-        // shuffle deck
         $this->cards->shuffle('deck');
-        // deal 13 cards to each player
+
         $players = self::loadPlayersBasicInfos();
         foreach ($players as $player_id => $player) {
             $cards = $this->cards->pickCards(5, 'deck', $player_id);
@@ -478,7 +488,7 @@ class SiegeOfCranes extends Table
             array (
                 'giver_name' => $players[$giver_id]['player_name'],
                 'reciever_name' => $players[$receiver_id]['player_name'],
-                'cards' => array($target1_card,$target2_card)
+                'cards' => array($target1_card, $target2_card)
             )
         );
 
@@ -538,6 +548,44 @@ class SiegeOfCranes extends Table
         $this->gamestate->setPlayerNonMultiactive($player_id, 'passFox');
     }
 
+    function playCrane($card_id) {
+        self::checkAction("playCrane");
+        $player_id = self::getCurrentPlayerId();
+        $current_card = $this->cards->getCard($card_id);
+
+        // 8 == crane card
+        if ($current_card['type'] != 8) {
+            throw new BgaUserException(self::_("Only a Crane card may be played now."));
+        }
+
+        self::setGameStateValue("target_action_card_id", $card_id);
+
+        $this->cards->moveCard($card_id, 'discard');
+
+        $players = self::loadPlayersBasicInfos();
+
+        self::notifyAllPlayers(
+            'playAction',
+            clienttranslate('${player_name} plays ${type_displayed} to discard the last collected cards'),
+            array (
+                'i18n' => array('type_displayed'),
+                'player_id' => $player_id,
+                'player_name' => $players[$player_id]['player_name'],
+                'card_id' => $card_id,
+                'type' => $current_card['type'],
+                'type_displayed' => $this->card_types[$current_card['type']]['name'],
+            )
+        );
+
+        $this->gamestate->nextState('playCrane');
+    }
+
+    function passCrane() {
+        self::checkAction("passCrane");
+        $player_id = self::getCurrentPlayerId();
+        $this->gamestate->setPlayerNonMultiactive($player_id, 'passCrane');
+    }
+
     function addToCollection($card_ids) {
         self::checkAction("addToCollection");
         $player_id = self::getActivePlayerId();
@@ -549,7 +597,16 @@ class SiegeOfCranes extends Table
             }
         }
 
+        $length = count($card_ids);
+        if ($length > 10) {
+            throw new BgaVisibleSystemException(self::_("Unexpected number of cards to collect: $length"));
+        }
+
+        self::setGameStateValue("collected_card_length", $length);
+        $index = 0;
         foreach ($card_ids as $id) {
+            self::setGameStateValue("collected_card_id$index", $id);
+            $index++;
             $this->cards->moveCard($id, 'collections', $player_id);
         }
 
@@ -567,8 +624,7 @@ class SiegeOfCranes extends Table
             )
         );
         $this->updateScores();
-        // TODO: change to siege check
-        $this->gamestate->nextState('nextPlayer');
+        $this->gamestate->nextState('addToCollection');
     }
 
     function discardKangarooCards($card_ids) {
@@ -590,7 +646,7 @@ class SiegeOfCranes extends Table
         }
 
         if (3 < count($player_cards)) {
-            throw new BgaUserException(self::_("Wrong number of cards selected to discard."));
+            throw new BgaUserException(self::_("Not enough cards selected to discard."));
         }
 
         foreach ($card_ids as $id) {
@@ -798,7 +854,26 @@ class SiegeOfCranes extends Table
                 $this->gamestate->nextState('selectCardToCollect');
                 break;
             case 8: // cranes
-                throw new BgaVisibleSystemException ('Attempted to perform action for a Crain card.');
+                $length = self::getGameStateValue("collected_card_length");
+                $cards = array();
+                for ($index = 0; $index < $length; $index++) {
+                    $id = self::getGameStateValue("collected_card_id$index");
+                    array_push($cards, $this->cards->getCard($id));
+                    $this->cards->moveCard($id, 'discard');
+                }
+
+                self::notifyAllPlayers(
+                    'discardCollectedCards',
+                    clienttranslate('${player_name} discards the last collected cards'),
+                    array (
+                        'player_id' => $current_player_id,
+                        'player_name' => $current_player_name,
+                        'cards' => $cards
+                    )
+                );
+                $this->updateScores();
+                $this->gamestate->nextState('nextPlayer');
+                break;
             case 9: // coyotes
                 $this->gamestate->nextState('selectMultipleCardsToCollect');
                 break;
