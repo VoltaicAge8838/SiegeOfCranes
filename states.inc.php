@@ -70,10 +70,11 @@ $machinestates = array(
         "type" => "activeplayer",
         "possibleactions" => array("playAction", "playFerret", "playRat", "startCollecting", "addToCollection", "drawCards", "playFinch"),
         "transitions" => array(
+            "nextPlayer" => 3,
             "playAction" => 4,
             "waitForFoxes" => 5,
             "addToCollection" => 7,
-            "nextPlayer" => 3
+            "gameEnd" => 99,
         )
     ),
 
@@ -98,6 +99,7 @@ $machinestates = array(
             "selectCardToCollect" => 9,
             "kangarooDiscard" => 10,
             "giveCards" => 11,
+            "gameEnd" => 99,
         )
     ),
 

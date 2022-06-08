@@ -50,6 +50,7 @@ class SiegeOfCranes extends Table
                "collected_card_id7" => 24,
                "collected_card_id8" => 25,
                "collected_card_id9" => 26,
+               "second_deck" => 27,
             //      ...
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
@@ -242,7 +243,26 @@ class SiegeOfCranes extends Table
 
     function drawCards($number_of_cards, $player_id, $player_name) {
         $cards = $this->cards->pickCards($number_of_cards, 'deck', $player_id);
-        // and notify
+
+        if ($this->cards->countCardInLocation('deck') == 0) {
+            if (self::getGameStateValue('second_deck') == 0) {
+                self::setGameStateValue('second_deck', 1);
+                $this->cards->moveAllCardsInLocation('discard', 'deck');
+                $this->cards->shuffle('deck');
+
+                // finish drawing cards
+                if (count($cards) < $number_of_cards) {
+                    $cards = array_merge($cards, $this->cards->pickCards($number_of_cards, 'deck', $player_id));
+                    // check if we've exhausted the deck again
+                    if ($this->cards->countCardInLocation('deck') == 0) {
+                        $this->gamestate->nextState('gameEnd');
+                    }
+                }
+            } else {
+                $this->gamestate->nextState('gameEnd');
+            }
+        }
+
         self::notifyAllPlayers(
             'drawCards',
             clienttranslate('${player_name} draws ${number_of_cards} cards'),
