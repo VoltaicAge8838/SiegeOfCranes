@@ -27,30 +27,10 @@
 
 <div id="table">
     <div></div>
-    <div>
-        <!-- BEGIN topplayer -->
-        <div class="playertable whiteblock playertable_{PLAYER_ID}">
-            <div class="playertablename" style="color:#{PLAYER_COLOR}">
-                {PLAYER_NAME}
-            </div>
-            <div class="playercollection" id="playercollection_{PLAYER_ID}">
-            </div>
-        </div>
-        <!-- END topplayer -->
-    </div>
+    <div>{TOP_PLAYER}</div>
     <div></div>
 
-    <div>
-        <!-- BEGIN leftplayer -->
-        <div class="playertable whiteblock playertable_{PLAYER_ID}">
-            <div class="playertablename" style="color:#{PLAYER_COLOR}">
-                {PLAYER_NAME}
-            </div>
-            <div class="playercollection" id="playercollection_{PLAYER_ID}">
-            </div>
-        </div>
-        <!-- END leftplayer -->
-    </div>
+    <div>{LEFT_PLAYER}</div>
     <div class="center">
         <div class="expand"></div>
         <div id="deck_wrap" class="whiteblock card_wrap">
@@ -66,30 +46,10 @@
         </div>
         <div class="expand"></div>
     </div>
-    <div>
-        <!-- BEGIN rightplayer -->
-        <div class="playertable whiteblock playertable_{PLAYER_ID}">
-            <div class="playertablename" style="color:#{PLAYER_COLOR}">
-                {PLAYER_NAME}
-            </div>
-            <div class="playercollection" id="playercollection_{PLAYER_ID}">
-            </div>
-        </div>
-        <!-- END rightplayer -->
-    </div>
+    <div>{RIGHT_PLAYER}</div>
 
     <div></div>
-    <div>
-        <!-- BEGIN thisplayer -->
-        <div class="playertable whiteblock playertable_{PLAYER_ID}">
-            <div class="playertablename" style="color:#{PLAYER_COLOR}">
-                {PLAYER_NAME}
-            </div>
-            <div class="playercollection" id="playercollection_{PLAYER_ID}">
-            </div>
-        </div>
-        <!-- END thisplayer -->
-    </div>
+    <div>{THIS_PLAYER}</div>
     <div></div>
 </div>
 

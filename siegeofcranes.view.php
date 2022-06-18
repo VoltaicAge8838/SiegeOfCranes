@@ -50,36 +50,33 @@ class view_siegeofcranes_siegeofcranes extends game_view
         $last_half = array_slice($player_ids, $index);
         $reorderd_ids = array_merge($last_half, $first_half);
 
-        if ($players_nbr == 4) {
-            $positions = array("thisplayer", "leftplayer", "topplayer", "rightplayer");
-            foreach ($reorderd_ids as $key => $player_id) {
-                $this->page->begin_block($template, $positions[$key]);
-                $this->page->insert_block($positions[$key], array (
-                    "PLAYER_ID" => $player_id,
-                    "PLAYER_NAME" => $players[$player_id]['player_name'],
-                    "PLAYER_COLOR" => $players[$player_id]['player_color']
-                ));
-            }
-        } else if ($players_nbr == 3) {
-            $positions = array("thisplayer", "topplayer", "rightplayer");
-            foreach ($reorderd_ids as $key => $player_id) {
-                $this->page->begin_block($template, $positions[$key]);
-                $this->page->insert_block($positions[$key], array (
-                    "PLAYER_ID" => $player_id,
-                    "PLAYER_NAME" => $players[$player_id]['player_name'],
-                    "PLAYER_COLOR" => $players[$player_id]['player_color']
-                ));
-            }
-        } else { // 2 players
-            $positions = array("thisplayer", "topplayer");
-            foreach ($reorderd_ids as $key => $player_id) {
-                $this->page->begin_block($template, $positions[$key]);
-                $this->page->insert_block($positions[$key], array (
-                    "PLAYER_ID" => $player_id,
-                    "PLAYER_NAME" => $players[$player_id]['player_name'],
-                    "PLAYER_COLOR" => $players[$player_id]['player_color']
-                ));
-            }
+        // default: 4 players
+        $positions = array("THIS_PLAYER", "LEFT_PLAYER", "TOP_PLAYER", "RIGHT_PLAYER");
+        if ($players_nbr == 3) {
+            $positions = array("THIS_PLAYER", "TOP_PLAYER", "RIGHT_PLAYER");
+            $this->tpl["LEFT_PLAYER"] = self::_("");
+        } else if ($players_nbr == 2) {
+            $positions = array("THIS_PLAYER", "TOP_PLAYER");
+            $this->tpl["LEFT_PLAYER"] = self::_("");
+            $this->tpl["RIGHT_PLAYER"] = self::_("");
+        }
+
+        foreach ($reorderd_ids as $key => $player_id) {
+            $player_name = $players[$player_id]['player_name'];
+            $player_color = $players[$player_id]['player_color'];
+            $this->tpl[$positions[$key]] = self::_(
+                "<div class=\"playertable whiteblock playertable_$player_id\">
+                    <div class=\"playertablename\" style=\"color:#$player_color\">$player_name</div>
+                    <div class=\"playercollection\" id=\"playercollection_$player_id\">
+                    </div>
+                </div>"
+            );
+            // $this->page->begin_block($template, $positions[$key]);
+            // $this->page->insert_block($positions[$key], array (
+            //     "PLAYER_ID" => $player_id,
+            //     "PLAYER_NAME" => $players[$player_id]['player_name'],
+            //     "PLAYER_COLOR" => $players[$player_id]['player_color']
+            // ));
         }
 
         // this will make our My Hand text translatable
