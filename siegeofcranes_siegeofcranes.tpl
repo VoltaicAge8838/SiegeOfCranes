@@ -25,26 +25,76 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="discard_wrap" class="whiteblock">
-    <h3>Discard</h3>
-    <div id="discard">
+<div id="table">
+    <div></div>
+    <div>
+        <!-- BEGIN topplayer -->
+        <div class="playertable whiteblock playertable_{PLAYER_ID}">
+            <div class="playertablename" style="color:#{PLAYER_COLOR}">
+                {PLAYER_NAME}
+            </div>
+            <div class="playercollection" id="playercollection_{PLAYER_ID}">
+            </div>
+        </div>
+        <!-- END topplayer -->
     </div>
-</div>
+    <div></div>
 
-<div id="playertables">
-    <!-- BEGIN player -->
-    <div class="playertable whiteblock playertable_{PLAYER_ID}">
-        <div class="playertablename" style="color:#{PLAYER_COLOR}">
-            {PLAYER_NAME}
+    <div>
+        <!-- BEGIN leftplayer -->
+        <div class="playertable whiteblock playertable_{PLAYER_ID}">
+            <div class="playertablename" style="color:#{PLAYER_COLOR}">
+                {PLAYER_NAME}
+            </div>
+            <div class="playercollection" id="playercollection_{PLAYER_ID}">
+            </div>
         </div>
-        <div class="playercollection" id="playercollection_{PLAYER_ID}">
-        </div>
+        <!-- END leftplayer -->
     </div>
-    <!-- END player -->
+    <div class="center">
+        <div class="expand"></div>
+        <div id="deck_wrap" class="whiteblock card_wrap">
+            <h3>{DECK}</h3>
+            <div id="deck">
+            </div>
+        </div>
+
+        <div id="discard_wrap" class="whiteblock card_wrap">
+            <h3>{DISCARD}</h3>
+            <div id="discard">
+            </div>
+        </div>
+        <div class="expand"></div>
+    </div>
+    <div>
+        <!-- BEGIN rightplayer -->
+        <div class="playertable whiteblock playertable_{PLAYER_ID}">
+            <div class="playertablename" style="color:#{PLAYER_COLOR}">
+                {PLAYER_NAME}
+            </div>
+            <div class="playercollection" id="playercollection_{PLAYER_ID}">
+            </div>
+        </div>
+        <!-- END rightplayer -->
+    </div>
+
+    <div></div>
+    <div>
+        <!-- BEGIN thisplayer -->
+        <div class="playertable whiteblock playertable_{PLAYER_ID}">
+            <div class="playertablename" style="color:#{PLAYER_COLOR}">
+                {PLAYER_NAME}
+            </div>
+            <div class="playercollection" id="playercollection_{PLAYER_ID}">
+            </div>
+        </div>
+        <!-- END thisplayer -->
+    </div>
+    <div></div>
 </div>
 
 <div id="myhand_wrap" class="whiteblock">
-    <h3>My Hand</h3>
+    <h3>{YOUR_HAND}</h3>
     <div id="myhand">
     </div>
 </div>
@@ -55,6 +105,9 @@
 
 var jstpl_cardontable = '<div class="cardontable" id="cardontable_${card_id}" style="background-position:-${x}px -${y}px"></div>';
 
+var jstpl_player_board = '\<div class="cp_board">\
+    <div id="stoneicon_p${id}" class="gmk_stoneicon gmk_stoneicon_${color}"></div><span id="stonecount_p${id}">0</span>\
+</div>';
 
 </script>
 

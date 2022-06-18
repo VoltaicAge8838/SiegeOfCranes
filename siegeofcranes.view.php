@@ -32,29 +32,60 @@ class view_siegeofcranes_siegeofcranes extends game_view
         return "siegeofcranes";
     }
 
-  	function build_page( $viewArgs )
-  	{
-  	    // Get players & players number
+    function build_page($viewArgs) {
+        global $g_user;
+        $current_player_id = $g_user->get_id();
+
+        // Get players & players number
         $players = $this->game->loadPlayersBasicInfos();
-        $players_nbr = count( $players );
+        $players_nbr = count($players);
 
         /*********** Place your code below:  ************/
 
         $template = self::getGameName() . "_" . self::getGameName();
 
+        $player_ids = array_keys($players);
+        $index = array_search($current_player_id, $player_ids);
+        $first_half = array_slice($player_ids, 0, $index);
+        $last_half = array_slice($player_ids, $index);
+        $reorderd_ids = array_merge($last_half, $first_half);
 
-        // this will inflate our player block with actualy players data
-        $this->page->begin_block($template, "player");
-        foreach ( $players as $player_id => $info ) {
-          $this->page->insert_block("player", array (
-            "PLAYER_ID" => $player_id,
-            "PLAYER_NAME" => $players[$player_id]['player_name'],
-            "PLAYER_COLOR" => $players[$player_id]['player_color']
-          ));
+        if ($players_nbr == 4) {
+            $positions = array("thisplayer", "leftplayer", "topplayer", "rightplayer");
+            foreach ($reorderd_ids as $key => $player_id) {
+                $this->page->begin_block($template, $positions[$key]);
+                $this->page->insert_block($positions[$key], array (
+                    "PLAYER_ID" => $player_id,
+                    "PLAYER_NAME" => $players[$player_id]['player_name'],
+                    "PLAYER_COLOR" => $players[$player_id]['player_color']
+                ));
+            }
+        } else if ($players_nbr == 3) {
+            $positions = array("thisplayer", "topplayer", "rightplayer");
+            foreach ($reorderd_ids as $key => $player_id) {
+                $this->page->begin_block($template, $positions[$key]);
+                $this->page->insert_block($positions[$key], array (
+                    "PLAYER_ID" => $player_id,
+                    "PLAYER_NAME" => $players[$player_id]['player_name'],
+                    "PLAYER_COLOR" => $players[$player_id]['player_color']
+                ));
+            }
+        } else { // 2 players
+            $positions = array("thisplayer", "topplayer");
+            foreach ($reorderd_ids as $key => $player_id) {
+                $this->page->begin_block($template, $positions[$key]);
+                $this->page->insert_block($positions[$key], array (
+                    "PLAYER_ID" => $player_id,
+                    "PLAYER_NAME" => $players[$player_id]['player_name'],
+                    "PLAYER_COLOR" => $players[$player_id]['player_color']
+                ));
+            }
         }
 
-        // this will makek our My Hand text translatable
-        $this->tpl['MY_HAND'] = self::_("My hand");
+        // this will make our My Hand text translatable
+        $this->tpl['YOUR_HAND'] = self::_("Your Hand");
+        $this->tpl['DECK'] = self::_("Deck");
+        $this->tpl['DISCARD'] = self::_("Discard");
 
 
         /*
@@ -96,7 +127,7 @@ class view_siegeofcranes_siegeofcranes extends game_view
 
 
         /*********** Do not change anything below this line  ************/
-  	}
+    }
 }
 
 
