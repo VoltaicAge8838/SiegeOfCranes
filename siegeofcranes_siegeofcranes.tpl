@@ -35,7 +35,7 @@
         <div class="expand"></div>
         <div id="deck_wrap" class="whiteblock card_wrap">
             <h3>{DECK}</h3>
-            <div id="deck">
+            <div id="deck" class="cardback">
             </div>
         </div>
 

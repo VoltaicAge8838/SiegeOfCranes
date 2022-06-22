@@ -58,6 +58,7 @@ function (dojo, declare) {
 
             // set up player hand
             this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardwidth, this.cardheight);
+            this.playerHand.extraClasses='card';
 
             // Cards in player's hand
             for (var i in this.gamedatas.hand) {
