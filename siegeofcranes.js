@@ -304,6 +304,12 @@ function (dojo, declare) {
         },
 
         addCardsToHand: function(cards) {
+            this.slideTemporaryObject(
+                this.format_block('jstpl_cardback', {}),
+                'myhand',
+                'deck',
+                'myhand'
+            ).play();
             for (var card_index in cards) {
                 var card = cards[card_index];
                 this.playerHand.addToStockWithId(card.type, card.id);

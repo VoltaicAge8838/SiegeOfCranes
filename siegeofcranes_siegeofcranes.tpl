@@ -65,6 +65,8 @@
 
 var jstpl_cardontable = '<div class="cardontable" id="cardontable_${card_id}" style="background-position:-${x}px -${y}px"></div>';
 
+var jstpl_cardback = '<div class="cardback" id="cardback"></div>';
+
 var jstpl_player_board = '\<div class="cp_board">\
     <div id="stoneicon_p${id}" class="gmk_stoneicon gmk_stoneicon_${color}"></div><span id="stonecount_p${id}">0</span>\
 </div>';
