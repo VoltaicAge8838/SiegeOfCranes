@@ -41,7 +41,7 @@
 
         <div id="discard_wrap" class="whiteblock card_wrap">
             <h3>{DISCARD}</h3>
-            <div id="discard">
+            <div id="discard" class="discardback">
             </div>
         </div>
         <div class="expand"></div>
