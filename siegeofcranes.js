@@ -463,8 +463,8 @@ function (dojo, declare) {
                         this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
                         this.updatePageTitle();
                         this.removeActionButtons();
-                        this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 1));
-                        this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 0));
+                        this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 0));
+                        this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 1));
                         this.addActionButton('cancelFerret_button', _('Cancel'), 'cancelFerret');
                         break;
 

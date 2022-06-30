@@ -368,7 +368,7 @@ class SiegeOfCranes extends Table
         }
 
         $direction_name = 'left';
-        if ($direction == 0) {
+        if ($direction == 1) {
             $direction_name = 'right';
         }
 
@@ -840,7 +840,7 @@ class SiegeOfCranes extends Table
                     $this->cards->moveAllCardsInLocation('hand', 'hand', $last_player_id, $first_player_id);
                     $this->cards->moveAllCardsInLocation('temp', 'hand', null, $last_player_id);
                 } else {
-                    if ($direction == 0) { // 0 = right
+                    if ($direction == 1) {
                         $players = array_reverse($players, true);
                     }
                     $prev_player_id = array_key_last($players);
@@ -853,17 +853,22 @@ class SiegeOfCranes extends Table
                 }
 
                 // send notifications
+                $direction_name = 'left';
+                if ($direction == 1) {
+                    $direction_name = 'right';
+                }
+
                 foreach ($players as $player_id => $player) {
                     $cards = $this->cards->getCardsInLocation('hand', $player_id);
 
                     self::notifyPlayer(
                         $player_id,
                         'playerDiscardAndDrawCards',
-                        clienttranslate('${player_name} passes their hand to the left'),
+                        clienttranslate('All players pass their hand to the ${direction}'),
                         array (
                             'player_id' => $player_id,
-                            'player_name' => $player['player_name'],
-                            'cards' => $cards
+                            'cards' => $cards,
+                            'direction' => $direction_name
                         )
                     );
                 }
