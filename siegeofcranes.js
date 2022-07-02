@@ -68,9 +68,14 @@ function (dojo, declare) {
 
             // Setting up all players' collections
             this.playersCollection = [];
+            this.playersHandCount = [];
             for (var player_id in gamedatas.players) {
                 // var player = gamedatas.players[player_id];
                 this.playersCollection[player_id] = this.setupStock(`playercollection_${player_id}`, 'icons.gif', this.iconwidth, this.iconheight);
+
+                this.playersHandCount[player_id] = new ebg.counter();
+                this.playersHandCount[player_id].create('handcount_' + player_id);
+                this.playersHandCount[player_id].setValue(gamedatas.players[player_id].handcount);
             }
 
             // Cards played on table

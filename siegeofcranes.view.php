@@ -67,16 +67,10 @@ class view_siegeofcranes_siegeofcranes extends game_view
             $this->tpl[$positions[$key]] = self::_(
                 "<div class=\"playertable whiteblock playertable_$player_id\">
                     <div class=\"playertablename\" style=\"color:#$player_color\">$player_name</div>
-                    <div class=\"playercollection\" id=\"playercollection_$player_id\">
-                    </div>
+                    <div>Number of cards in hand: <span id=\"handcount_$player_id\"></span></div>
+                    <div class=\"playercollection\" id=\"playercollection_$player_id\"></div>
                 </div>"
             );
-            // $this->page->begin_block($template, $positions[$key]);
-            // $this->page->insert_block($positions[$key], array (
-            //     "PLAYER_ID" => $player_id,
-            //     "PLAYER_NAME" => $players[$player_id]['player_name'],
-            //     "PLAYER_COLOR" => $players[$player_id]['player_color']
-            // ));
         }
 
         // this will make our My Hand text translatable
