@@ -26,11 +26,11 @@ function (dojo, declare) {
     return declare("bgagame.siegeofcranes", ebg.core.gamegui, {
         constructor: function(){
             console.log('siegeofcranes constructor');
-            this.cardwidth = 100;
-            this.cardheight = 143;
-            this.iconwidth = 64;
-            this.iconheight = 64;
-            this.backupdescriptionmyturn = '';
+            this.cardWidth = 100;
+            this.cardHeight = 143;
+            this.iconWidth = 64;
+            this.iconHeight = 64;
+            this.backupDescriptionMyTurn = '';
             this.isCoyoteState = true;
 
             // Here, you can init the global variables of your user interface
@@ -57,7 +57,7 @@ function (dojo, declare) {
             console.log( "Starting game setup" );
 
             // set up player hand
-            this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardwidth, this.cardheight);
+            this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardWidth, this.cardHeight);
             this.playerHand.extraClasses='card';
 
             // Cards in player's hand
@@ -69,29 +69,29 @@ function (dojo, declare) {
             // Setting up all players' collections
             this.playersCollection = [];
             this.playersHandCount = [];
-            for (var player_id in gamedatas.players) {
-                // var player = gamedatas.players[player_id];
-                this.playersCollection[player_id] = this.setupStock(`playercollection_${player_id}`, 'icons.gif', this.iconwidth, this.iconheight);
+            for (var playerId in gamedatas.players) {
+                // var player = gamedatas.players[playerId];
+                this.playersCollection[playerId] = this.setupStock(`playercollection_${playerId}`, 'icons.gif', this.iconWidth, this.iconHeight);
 
-                this.playersHandCount[player_id] = new ebg.counter();
-                this.playersHandCount[player_id].create('handcount_' + player_id);
-                this.playersHandCount[player_id].setValue(gamedatas.players[player_id].handcount);
+                this.playersHandCount[playerId] = new ebg.counter();
+                this.playersHandCount[playerId].create('handcount_' + playerId);
+                this.playersHandCount[playerId].setValue(gamedatas.players[playerId].handcount);
             }
 
             // Cards played on table
             for (i in this.gamedatas.collections) {
                 var card = this.gamedatas.collections[i];
-                var player_id = card.location_arg;
-                // this.playersCollection[player_id].addToStockWithId(card.type, card.id);
-                this.addCardToCollection(player_id, card.type, card.id);
+                var playerId = card.location_arg;
+                // this.playersCollection[playerId].addToStockWithId(card.type, card.id);
+                this.addCardToCollection(playerId, card.type, card.id);
             }
 
             // Setting up player boards
-            // for (var player_id in gamedatas.players) {
-            //     var player = gamedatas.players[player_id];
+            // for (var playerId in gamedatas.players) {
+            //     var player = gamedatas.players[playerId];
 
             //     // Setting up players boards if needed
-            //     var player_board_div = $('player_board_'+player_id);
+            //     var player_board_div = $('player_board_'+playerId);
             //     dojo.place(this.format_block('jstpl_player_board', player), player_board_div);
             // }
 
@@ -244,66 +244,66 @@ function (dojo, declare) {
             return stock;
         },
 
-        addCardToCollection: function(player_id, type, card_id) {
-            var source_id = 'overall_player_board_' + player_id;
-            if ($('myhand_item_' + card_id)) {
-                source_id = 'myhand_item_' + card_id;
-                this.playerHand.removeFromStockById(card_id);
+        addCardToCollection: function(playerId, type, cardId) {
+            var sourceId = 'overall_player_board_' + playerId;
+            if ($('myhand_item_' + cardId)) {
+                sourceId = 'myhand_item_' + cardId;
+                this.playerHand.removeFromStockById(cardId);
             }
             this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardwidth * ((type - 1) % 5),
-                        y: this.cardheight * Math.floor((type - 1) / 5),
-                        card_id: card_id
+                        x: this.cardWidth * ((type - 1) % 5),
+                        y: this.cardHeight * Math.floor((type - 1) / 5),
+                        card_id: cardId
                     }
                 ),
-                'playercollection_' + player_id,
-                source_id,
-                'playercollection_' + player_id
+                'playercollection_' + playerId,
+                sourceId,
+                'playercollection_' + playerId
             ).play();
 
-            this.playersCollection[player_id].addToStockWithId(type, card_id);
+            this.playersCollection[playerId].addToStockWithId(type, cardId);
         },
 
-        discardCard: function(player_id, type, card_id) {
-            console.log('discardCard', player_id, type, card_id);
-            var source_id = 'overall_player_board_' + player_id;
-            if ($('myhand_item_' + card_id)) {
-                source_id = 'myhand_item_' + card_id;
-                this.playerHand.removeFromStockById(card_id);
+        discardCard: function(playerId, type, cardId) {
+            console.log('discardCard', playerId, type, cardId);
+            var sourceId = 'overall_player_board_' + playerId;
+            if ($('myhand_item_' + cardId)) {
+                sourceId = 'myhand_item_' + cardId;
+                this.playerHand.removeFromStockById(cardId);
             }
             this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardwidth * ((type - 1) % 5),
-                        y: this.cardheight * Math.floor((type - 1) / 5),
-                        card_id: card_id
+                        x: this.cardWidth * ((type - 1) % 5),
+                        y: this.cardHeight * Math.floor((type - 1) / 5),
+                        card_id: cardId
                     }
                 ),
                 'discard',
-                source_id,
+                sourceId,
                 'discard'
             ).play();
         },
 
-        discardCollectedCard: function(player_id, type, card_id) {
-            console.log('discardCard', player_id, type, card_id);
-            var source_id = 'playercollection_' + player_id;
-            this.playersCollection[player_id].removeFromStockById(card_id);
+        discardCollectedCard: function(playerId, type, cardId) {
+            console.log('discardCard', playerId, type, cardId);
+            var sourceId = 'playercollection_' + playerId;
+            this.playersCollection[playerId].removeFromStockById(cardId);
             this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardwidth * ((type - 1) % 5),
-                        y: this.cardheight * Math.floor((type - 1) / 5),
-                        card_id: card_id
+                        x: this.cardWidth * ((type - 1) % 5),
+                        y: this.cardHeight * Math.floor((type - 1) / 5),
+                        card_id: cardId
                     }
                 ),
                 'discard',
-                source_id,
+                sourceId,
                 'discard'
             ).play();
         },
@@ -315,8 +315,8 @@ function (dojo, declare) {
                 'deck',
                 'myhand'
             ).play();
-            for (var card_index in cards) {
-                var card = cards[card_index];
+            for (var cardIndex in cards) {
+                var card = cards[cardIndex];
                 this.playerHand.addToStockWithId(card.type, card.id);
             }
         },
@@ -360,7 +360,7 @@ function (dojo, declare) {
                             // What to do after the server call if it succeeded
                             // (most of the time: nothing)
 
-                         }, function( is_error) {
+                         }, function( isError) {
 
                             // What to do after the server call in anyway (success or failure)
                             // (most of the time: nothing)
@@ -370,20 +370,20 @@ function (dojo, declare) {
 
         */
 
-        playFerret: function(card_id, direction) {
+        playFerret: function(cardId, direction) {
             var action = 'playFerret';
 
             if (this.checkAction(action, true)) {
                 this.ajaxcall(
                     "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                     {
-                        id: card_id,
+                        id: cardId,
                         direction: direction,
                         lock: true
                     },
                     this,
                     function(result) {},
-                    function(is_error) {}
+                    function(isError) {}
                 );
 
                 this.playerHand.unselectAll();
@@ -393,7 +393,7 @@ function (dojo, declare) {
         },
 
         cancelFerret: function() {
-            this.gamedatas.gamestate.descriptionmyturn = this.backupdescriptionmyturn;
+            this.gamedatas.gamestate.descriptionmyturn = this.backupDescriptionMyTurn;
             this.updatePageTitle();
             this.removeActionButtons();
             this.addActionButton('playAction_button', _('Play Action'), 'playAction');
@@ -405,7 +405,7 @@ function (dojo, declare) {
             var items = this.playerHand.getSelectedItems();
             if (items.length === 1) {
                 var action = 'playAction';
-                var card_id = items[0].id;
+                var cardId = items[0].id;
 
                 switch (items[0].type) {
                     case "1": // rat card
@@ -419,14 +419,14 @@ function (dojo, declare) {
                                 this.ajaxcall(
                                     "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                                     {
-                                        id: card_id,
+                                        id: cardId,
                                         target1_id: targets[0].id,
                                         target2_id: targets[1].id,
                                         lock: true
                                     },
                                     this,
                                     function(result) {},
-                                    function(is_error) {}
+                                    function(isError) {}
                                 );
                             }
                         }
@@ -436,40 +436,40 @@ function (dojo, declare) {
                     case "5": // finch card
                         var playerIds = [];
                         var playerNames = [];
-                        for (var player_id in this.gamedatas.players) {
-                            if (player_id != this.player_id) {
-                                playerIds.push(player_id);
-                                playerNames.push(this.gamedatas.players[player_id].name);
+                        for (var playerId in this.gamedatas.players) {
+                            if (playerId != this.playerId) {
+                                playerIds.push(playerId);
+                                playerNames.push(this.gamedatas.players[playerId].name);
                             }
                         }
                         this.multipleChoiceDialog(
                             _('Pick a player to give you two cards'),
                             playerNames,
                             (choice) => {
-                                var giver_id = playerIds[choice];
-                                console.log('dialog callback with '+ giver_id);
+                                var giverId = playerIds[choice];
+                                console.log('dialog callback with '+ giverId);
                                 this.ajaxcall(
                                     "/" + this.game_name + "/" +this.game_name + "/playFinch.html",
                                     {
-                                        id: card_id,
-                                        giver_id: giver_id,
+                                        id: cardId,
+                                        giver_id: giverId,
                                         lock: true
                                     },
                                     this,
                                     function(result) {},
-                                    function(is_error) {}
+                                    function(isError) {}
                                 );
                             }
                         );
                         break;
 
                     case "6": // ferret card
-                        this.backupdescriptionmyturn = this.gamedatas.gamestate.descriptionmyturn;
+                        this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
                         this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
                         this.updatePageTitle();
                         this.removeActionButtons();
-                        this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(card_id, 0));
-                        this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(card_id, 1));
+                        this.addActionButton('playFerretLeft_button', _('Left'), () => this.playFerret(cardId, 0));
+                        this.addActionButton('playFerretRight_button', _('Right'), () => this.playFerret(cardId, 1));
                         this.addActionButton('cancelFerret_button', _('Cancel'), 'cancelFerret');
                         break;
 
@@ -478,12 +478,12 @@ function (dojo, declare) {
                             this.ajaxcall(
                                 "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                                 {
-                                    id: card_id,
+                                    id: cardId,
                                     lock: true
                                 },
                                 this,
                                 function(result) {},
-                                function(is_error) {}
+                                function(isError) {}
                             );
                         }
                         this.playerHand.unselectAll();
@@ -507,16 +507,16 @@ function (dojo, declare) {
             if (items.length === 1 || this.isCoyoteSelection(items)) {
                 var action = 'addToCollection';
                 if (this.checkAction(action, true)) {
-                    var card_ids = items.map(item => item.id).join(',');
+                    var cardIds = items.map(item => item.id).join(',');
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
-                            ids: card_ids,
+                            ids: cardIds,
                             lock: true
                         },
                         this,
                         function(result) {},
-                        function(is_error) {}
+                        function(isError) {}
                     );
 
                     this.playerHand.unselectAll();
@@ -532,16 +532,16 @@ function (dojo, declare) {
             var items = this.playerHand.getSelectedItems();
             var action = 'discardCards';
             if (this.checkAction(action, true)) {
-                var card_ids = items.map(item => item.id).join(',');
+                var cardIds = items.map(item => item.id).join(',');
                 this.ajaxcall(
                     "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                     {
-                        ids: card_ids,
+                        ids: cardIds,
                         lock: true
                     },
                     this,
                     function(result) {},
-                    function(is_error) {}
+                    function(isError) {}
                 );
 
                 this.playerHand.unselectAll();
@@ -564,7 +564,7 @@ function (dojo, declare) {
                         },
                         this,
                         function(result) {},
-                        function(is_error) {}
+                        function(isError) {}
                     );
                 }
                 this.playerHand.unselectAll();
@@ -583,7 +583,7 @@ function (dojo, declare) {
                     },
                     this,
                     function(result) {},
-                    function(is_error) {}
+                    function(isError) {}
                 );
             }
         },
@@ -593,16 +593,16 @@ function (dojo, declare) {
             if (items.length === 1) {
                 var action = 'playFox';
                 if (this.checkAction(action, true)) {
-                    var card_id = items[0].id;
+                    var cardId = items[0].id;
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
-                            id: card_id,
+                            id: cardId,
                             lock: true
                         },
                         this,
                         function(result) {},
-                        function(is_error) {}
+                        function(isError) {}
                     );
 
                     this.playerHand.unselectAll();
@@ -623,7 +623,7 @@ function (dojo, declare) {
                     },
                     this,
                     function(result) {},
-                    function(is_error) {}
+                    function(isError) {}
                 );
             }
         },
@@ -633,16 +633,16 @@ function (dojo, declare) {
             if (items.length === 1) {
                 var action = 'playCrane';
                 if (this.checkAction(action, true)) {
-                    var card_id = items[0].id;
+                    var cardId = items[0].id;
                     this.ajaxcall(
                         "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                         {
-                            id: card_id,
+                            id: cardId,
                             lock: true
                         },
                         this,
                         function(result) {},
-                        function(is_error) {}
+                        function(isError) {}
                     );
 
                     this.playerHand.unselectAll();
@@ -663,7 +663,7 @@ function (dojo, declare) {
                     },
                     this,
                     function(result) {},
-                    function(is_error) {}
+                    function(isError) {}
                 );
             }
         },
@@ -701,17 +701,17 @@ function (dojo, declare) {
             dojo.subscribe('swapCollectionCards', this, "notif_swapCollectionCards");
             dojo.subscribe('newScores', this, "notif_newScores");
             dojo.subscribe('drawCards', this, "notif_noOp");
-            this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
+            this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.playerId);
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
             dojo.subscribe('discardAndDrawCards', this, "notif_noOp");
-            this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.player_id);
+            this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.playerId);
             dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
             dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
             dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
             dojo.subscribe('giveCards', this, "notif_noOp");
-            this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
+            this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.playerId || notif.args.receiver_id == this.playerId);
             dojo.subscribe('playerGiveCards', this, "notif_discardCards");
             dojo.subscribe('playerReceiveCards', this, "notif_playerDrawCards");
         },
@@ -734,8 +734,8 @@ function (dojo, declare) {
         */
 
         notif_addToCollection: function(notif) {
-            notif.args.card_ids.forEach(card_id => {
-                this.addCardToCollection(notif.args.player_id, notif.args.type, card_id);
+            notif.args.card_ids.forEach(cardId => {
+                this.addCardToCollection(notif.args.player_id, notif.args.type, cardId);
             });
         },
 
@@ -752,8 +752,8 @@ function (dojo, declare) {
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardwidth * ((t1cardType - 1) % 5),
-                        y: this.cardheight * Math.floor((t1cardType - 1) / 5),
+                        x: this.cardWidth * ((t1cardType - 1) % 5),
+                        y: this.cardHeight * Math.floor((t1cardType - 1) / 5),
                         card_id: t1cardId
                     }
                 ),
@@ -768,8 +768,8 @@ function (dojo, declare) {
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardwidth * ((t2cardType - 1) % 5),
-                        y: this.cardheight * Math.floor((t2cardType - 1) / 5),
+                        x: this.cardWidth * ((t2cardType - 1) % 5),
+                        y: this.cardHeight * Math.floor((t2cardType - 1) / 5),
                         card_id: t2cardId
                     }
                 ),
@@ -781,8 +781,8 @@ function (dojo, declare) {
         },
 
         notif_newScores: function(notif) {
-            for (var player_id in notif.args.newScores) {
-                this.scoreCtrl[player_id].toValue(notif.args.newScores[player_id]);
+            for (var playerId in notif.args.newScores) {
+                this.scoreCtrl[playerId].toValue(notif.args.newScores[playerId]);
             }
         },
 
