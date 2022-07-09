@@ -321,6 +321,20 @@ function (dojo, declare) {
             }
         },
 
+        ajaxAction: function(action, data) {
+            if (!this.checkAction(action)) {
+                return;
+            }
+            this.ajaxcall(
+                "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
+                data,
+                this,
+                function(result) {},
+                function(isError) {}
+            );
+            this.playerHand.unselectAll();
+        },
+
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -371,75 +385,44 @@ function (dojo, declare) {
         */
 
         playFerret: function(cardId, direction) {
-            var action = 'playFerret';
+            this.ajaxAction('playFerret', {
+                id: cardId,
+                direction: direction,
+                lock: true
+            });
 
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: cardId,
-                        direction: direction,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
-
-                this.playerHand.unselectAll();
-            } else {
-                this.playerHand.unselectAll();
-            }
+            this.playerHand.unselectAll();
         },
 
         playFinch: function(cardId, giverId) {
-            var action = 'playFinch';
+            this.ajaxAction('playFinch', {
+                id: cardId,
+                giver_id: giverId,
+                lock: true
+            });
 
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: cardId,
-                        giver_id: giverId,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
-
-                this.playerHand.unselectAll();
-            } else {
-                this.playerHand.unselectAll();
-            }
+            this.playerHand.unselectAll();
         },
 
         playRat: function(cardId) {
-            var action = 'playRat';
-            if (this.checkAction(action, true)) {
-                var targets = [];
-                for (playerId in this.playersCollection) {
-                    targets = targets.concat(this.playersCollection[playerId].getSelectedItems());
-                }
-                if (targets.length === 2) {
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            id: cardId,
-                            target1_id: targets[0].id,
-                            target2_id: targets[1].id,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(isError) {}
-                    );
-                    this.playerHand.unselectAll();
-                    this.playersCollection[playerId].unselectAll();
-                } else {
-                    this.showMessage('Incorrect number of collected cards selected', 'error');
-                }
+            var targets = [];
+            for (playerId in this.playersCollection) {
+                targets = targets.concat(this.playersCollection[playerId].getSelectedItems());
             }
+            if (targets.length !== 2) {
+                this.showMessage('Incorrect number of collected cards selected', 'error');
+                return;
+            }
+
+            this.ajaxAction('playRat', {
+                id: cardId,
+                target1_id: targets[0].id,
+                target2_id: targets[1].id,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
+            this.playersCollection[playerId].unselectAll();
         },
 
         cancelAction: function() {
@@ -453,58 +436,51 @@ function (dojo, declare) {
 
         playAction: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 1) {
-                var action = 'playAction';
-                var cardId = items[0].id;
+            if (items.length !== 1) {
+                this.showMessage('Select one card to play', 'error');
+                return;
+            }
+            var cardId = items[0].id;
 
-                switch (items[0].type) {
-                    case "1": // rat card
-                        this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
-                        this.gamedatas.gamestate.descriptionmyturn = _('Choose two collected cards to swap.');
-                        this.updatePageTitle();
-                        this.removeActionButtons();
-                        this.addActionButton('playRat_button', _('Swap cards'), this.playRat.bind(this, cardId));
-                        this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
-                        break;
+            switch (items[0].type) {
+                case "1": // rat card
+                    this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
+                    this.gamedatas.gamestate.descriptionmyturn = _('Choose two collected cards to swap.');
+                    this.updatePageTitle();
+                    this.removeActionButtons();
+                    this.addActionButton('playRat_button', _('Swap cards'), this.playRat.bind(this, cardId));
+                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    break;
 
-                    case "5": // finch card
-                        this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
-                        this.gamedatas.gamestate.descriptionmyturn = _('Choose a player to give you two cards.');
-                        this.updatePageTitle();
-                        this.removeActionButtons();
-                        for (var playerId in this.gamedatas.players) {
-                            if (playerId != this.player_id) {
-                                this.addActionButton('playFinch_' + playerId + '_button', _(this.gamedatas.players[playerId].name), this.playFinch.bind(this, cardId, playerId));
-                            }
+                case "5": // finch card
+                    this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
+                    this.gamedatas.gamestate.descriptionmyturn = _('Choose a player to give you two cards.');
+                    this.updatePageTitle();
+                    this.removeActionButtons();
+                    for (var playerId in this.gamedatas.players) {
+                        if (playerId != this.player_id) {
+                            this.addActionButton('playFinch_' + playerId + '_button', _(this.gamedatas.players[playerId].name), this.playFinch.bind(this, cardId, playerId));
                         }
-                        this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
-                        break;
+                    }
+                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    break;
 
-                    case "6": // ferret card
-                        this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
-                        this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
-                        this.updatePageTitle();
-                        this.removeActionButtons();
-                        this.addActionButton('playFerretLeft_button', _('Left'), this.playFerret.bind(this, cardId, 0));
-                        this.addActionButton('playFerretRight_button', _('Right'), this.playFerret.bind(this, cardId, 1));
-                        this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
-                        break;
+                case "6": // ferret card
+                    this.backupDescriptionMyTurn = this.gamedatas.gamestate.descriptionmyturn;
+                    this.gamedatas.gamestate.descriptionmyturn = _('Choose a direction to pass cards.');
+                    this.updatePageTitle();
+                    this.removeActionButtons();
+                    this.addActionButton('playFerretLeft_button', _('Left'), this.playFerret.bind(this, cardId, 0));
+                    this.addActionButton('playFerretRight_button', _('Right'), this.playFerret.bind(this, cardId, 1));
+                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    break;
 
-                    default:
-                        if (this.checkAction(action, true)) {
-                            this.ajaxcall(
-                                "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                                {
-                                    id: cardId,
-                                    lock: true
-                                },
-                                this,
-                                function(result) {},
-                                function(isError) {}
-                            );
-                        }
-                        this.playerHand.unselectAll();
-                }
+                default:
+                    this.ajaxAction('playAction', {
+                        id: cardId,
+                        lock: true
+                    });
+                    this.playerHand.unselectAll();
             }
         },
 
@@ -521,168 +497,96 @@ function (dojo, declare) {
 
         addToCollection: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 1 || this.isCoyoteSelection(items)) {
-                var action = 'addToCollection';
-                if (this.checkAction(action, true)) {
-                    var cardIds = items.map(item => item.id).join(',');
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            ids: cardIds,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(isError) {}
-                    );
+            var cardIds = items.map(item => item.id).join(',');
 
-                    this.playerHand.unselectAll();
-                } else {
-                    this.playerHand.unselectAll();
-                }
-            } else {
+            if (items.length !== 1 && !this.isCoyoteSelection(items)) {
                 this.showMessage('Cannot add selected cards to hand', 'error');
+                return;
             }
+
+            this.ajaxAction('addToCollection', {
+                ids: cardIds,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
         },
 
         discardCards: function() {
             var items = this.playerHand.getSelectedItems();
-            var action = 'discardCards';
-            if (this.checkAction(action, true)) {
-                var cardIds = items.map(item => item.id).join(',');
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        ids: cardIds,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
+            var cardIds = items.map(item => item.id).join(',');
 
-                this.playerHand.unselectAll();
-            } else {
-                this.playerHand.unselectAll();
-            }
+            this.ajaxAction('discardCards', {
+                ids: cardIds,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
         },
 
         giveCards: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 2) {
-                var action = 'giveCards';
-                if (this.checkAction(action, true)) {
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            target1_id: items[0].id,
-                            target2_id: items[1].id,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(isError) {}
-                    );
-                }
-                this.playerHand.unselectAll();
-            } else {
+
+            if (items.length !== 2) {
                 this.showMessage('Incorrect number of cards selected', 'error');
+                return;
             }
+
+            this.ajaxAction('giveCards', {
+                target1_id: items[0].id,
+                target2_id: items[1].id,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
         },
+
         drawCards: function() {
-            var action = 'drawCards';
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: 1,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
-            }
+            this.ajaxAction('drawCards', {
+                lock: true
+            });
         },
 
         playFox: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 1) {
-                var action = 'playFox';
-                if (this.checkAction(action, true)) {
-                    var cardId = items[0].id;
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            id: cardId,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(isError) {}
-                    );
-
-                    this.playerHand.unselectAll();
-                } else {
-                    this.playerHand.unselectAll();
-                }
+            if (items.length !== 1) {
+                this.showMessage('Incorrect number of cards selected', 'error');
+                return;
             }
+
+            this.ajaxAction('playFox', {
+                id: items[0].id,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
         },
 
         passFox: function() {
-            var action = 'passFox';
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: 1,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
-            }
+            this.ajaxAction('passFox', {
+                lock: true
+            });
         },
 
         playCrane: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length === 1) {
-                var action = 'playCrane';
-                if (this.checkAction(action, true)) {
-                    var cardId = items[0].id;
-                    this.ajaxcall(
-                        "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                        {
-                            id: cardId,
-                            lock: true
-                        },
-                        this,
-                        function(result) {},
-                        function(isError) {}
-                    );
-
-                    this.playerHand.unselectAll();
-                } else {
-                    this.playerHand.unselectAll();
-                }
+            if (items.length !== 1) {
+                this.showMessage('Incorrect number of cards selected', 'error');
+                return;
             }
+
+            this.ajaxAction('playCrane', {
+                id: items[0].id,
+                lock: true
+            });
+
+            this.playerHand.unselectAll();
         },
 
         passCrane: function() {
-            var action = 'passCrane';
-            if (this.checkAction(action, true)) {
-                this.ajaxcall(
-                    "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                    {
-                        id: 1,
-                        lock: true
-                    },
-                    this,
-                    function(result) {},
-                    function(isError) {}
-                );
-            }
+            this.ajaxAction('passCrane', {
+                lock: true
+            });
         },
 
 
