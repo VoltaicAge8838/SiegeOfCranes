@@ -266,13 +266,15 @@ class SiegeOfCranes extends Table
             }
         }
 
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         self::notifyAllPlayers(
             'drawCards',
             clienttranslate('${player_name} draws ${number_of_cards} cards'),
             array (
                 'player_id' => $player_id,
                 'player_name' => $player_name,
-                'number_of_cards' => $number_of_cards
+                'number_of_cards' => $number_of_cards,
+                'card_count' => $card_count,
             )
         );
         self::notifyPlayer(
@@ -283,7 +285,8 @@ class SiegeOfCranes extends Table
                 'player_id' => $player_id,
                 'player_name' => $player_name,
                 'number_of_cards' => $number_of_cards,
-                'cards' => $cards
+                'cards' => $cards,
+                'card_count' => $card_count,
             )
         );
     }
@@ -334,6 +337,7 @@ class SiegeOfCranes extends Table
 
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         self::setGameStateValue("target_action_card_id", $card_id);
 
@@ -346,7 +350,8 @@ class SiegeOfCranes extends Table
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
                 'type' => $current_card['type'],
-                'type_displayed' => $this->card_types[$current_card['type']]['name']
+                'type_displayed' => $this->card_types[$current_card['type']]['name'],
+                'card_count' => $card_count,
             )
         );
 
@@ -377,6 +382,7 @@ class SiegeOfCranes extends Table
 
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         self::setGameStateValue("target_action_card_id", $card_id);
         self::setGameStateValue("ferret_direction", $direction);
@@ -391,7 +397,8 @@ class SiegeOfCranes extends Table
                 'player_name' => self::getActivePlayerName(),
                 'type' => $current_card['type'],
                 'type_displayed' => $this->card_types[$current_card['type']]['name'],
-                'direction' => $direction_name
+                'direction' => $direction_name,
+                'card_count' => $card_count,
             )
         );
 
@@ -421,6 +428,7 @@ class SiegeOfCranes extends Table
         $player_id = self::getActivePlayerId();
         $players = self::loadPlayersBasicInfos();
         $this->cards->moveCard($card_id, 'discard');
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         self::setGameStateValue("target_action_card_id", $card_id);
         self::setGameStateValue("rat_target_id1", $target1_id);
@@ -440,6 +448,7 @@ class SiegeOfCranes extends Table
                 'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
                 'target2_player_name' => $players[$target2_card['location_arg']]['player_name'],
                 'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
+                'card_count' => $card_count,
             )
         );
 
@@ -458,6 +467,7 @@ class SiegeOfCranes extends Table
         $player_id = self::getActivePlayerId();
         $players = self::loadPlayersBasicInfos();
         $this->cards->moveCard($card_id, 'discard');
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         self::setGameStateValue("target_action_card_id", $card_id);
         self::setGameStateValue("card_player_id", $player_id);
@@ -474,6 +484,7 @@ class SiegeOfCranes extends Table
                 'player_name' => self::getActivePlayerName(),
                 'card_name' => $this->card_types[$current_card['type']]['name'],
                 'target_player_name' => $players[$giver_id]['player_name'],
+                'card_count' => $card_count,
             )
         );
 
@@ -483,6 +494,8 @@ class SiegeOfCranes extends Table
     function giveCards($target1_id, $target2_id) {
         self::checkAction("giveCards");
 
+        // TODO: check that target cards belong to the giver
+
         $receiver_id = self::getGameStateValue("card_player_id");
         $giver_id = self::getGameStateValue("target_player_id");
         $players = self::loadPlayersBasicInfos();
@@ -490,14 +503,19 @@ class SiegeOfCranes extends Table
         $this->cards->moveCard($target1_id, 'hand', $receiver_id);
         $this->cards->moveCard($target2_id, 'hand', $receiver_id);
 
+        $receiver_card_count = count($this->cards->getCardsInLocation('hand', $receiver_id));
+        $giver_card_count = count($this->cards->getCardsInLocation('hand', $giver_id));
+
         self::notifyAllPlayers(
             'giveCards',
-            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
             array (
                 'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
-                'reciever_id' => $receiver_id,
-                'reciever_name' => $players[$receiver_id]['player_name'],
+                'giver_card_count' => $giver_card_count,
+                'receiver_id' => $receiver_id,
+                'receiver_name' => $players[$receiver_id]['player_name'],
+                'receiver_card_count' => $receiver_card_count,
             )
         );
 
@@ -507,10 +525,14 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $giver_id,
             'playerGiveCards',
-            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
             array (
+                'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
-                'reciever_name' => $players[$receiver_id]['player_name'],
+                'giver_card_count' => $giver_card_count,
+                'receiver_id' => $receiver_id,
+                'receiver_name' => $players[$receiver_id]['player_name'],
+                'receiver_card_count' => $receiver_card_count,
                 'cards' => array($target1_card, $target2_card)
             )
         );
@@ -518,10 +540,14 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $receiver_id,
             'playerReceiveCards',
-            clienttranslate('${giver_name} gives two cards to ${reciever_name}'),
+            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
             array (
+                'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
-                'reciever_name' => $players[$receiver_id]['player_name'],
+                'giver_card_count' => $giver_card_count,
+                'receiver_id' => $receiver_id,
+                'receiver_name' => $players[$receiver_id]['player_name'],
+                'receiver_card_count' => $receiver_card_count,
                 'cards' => array($target1_card, $target2_card)
             )
         );
@@ -544,6 +570,7 @@ class SiegeOfCranes extends Table
 
         $this->cards->moveCard($card_id, 'discard');
 
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $players = self::loadPlayersBasicInfos();
 
         self::notifyAllPlayers(
@@ -558,7 +585,8 @@ class SiegeOfCranes extends Table
                 'type_displayed' => $this->card_types[$current_card['type']]['name'],
                 'target_card_id' => $target_card_id,
                 'target_type' => $target_card['type'],
-                'target_type_displayed' => $this->card_types[$target_card['type']]['name']
+                'target_type_displayed' => $this->card_types[$target_card['type']]['name'],
+                'card_count' => $card_count,
             )
         );
 
@@ -585,6 +613,7 @@ class SiegeOfCranes extends Table
 
         $this->cards->moveCard($card_id, 'discard');
 
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $players = self::loadPlayersBasicInfos();
 
         self::notifyAllPlayers(
@@ -597,6 +626,7 @@ class SiegeOfCranes extends Table
                 'card_id' => $card_id,
                 'type' => $current_card['type'],
                 'type_displayed' => $this->card_types[$current_card['type']]['name'],
+                'card_count' => $card_count,
             )
         );
 
@@ -632,6 +662,7 @@ class SiegeOfCranes extends Table
             $index++;
             $this->cards->moveCard($id, 'collections', $player_id);
         }
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         // notify collected card
         self::notifyAllPlayers(
@@ -643,7 +674,8 @@ class SiegeOfCranes extends Table
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
                 'type' => $cardType,
-                'type_displayed' => $this->card_types[$cardType]['name']
+                'type_displayed' => $this->card_types[$cardType]['name'],
+                'card_count' => $card_count,
             )
         );
         $this->updateScores();
@@ -675,6 +707,7 @@ class SiegeOfCranes extends Table
         foreach ($card_ids as $id) {
             $this->cards->moveCard($id, 'discard');
         }
+        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
 
         $types_string = implode(', ', $types);
 
@@ -686,7 +719,8 @@ class SiegeOfCranes extends Table
                 'cards' => $discard_cards,
                 'player_id' => $player_id,
                 'player_name' => self::getCurrentPlayerName(),
-                'types_string' => $types_string
+                'types_string' => $types_string,
+                'card_count' => $card_count,
             )
         );
 
@@ -801,12 +835,14 @@ class SiegeOfCranes extends Table
             case 2: // pandas
                 $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
                 $cards = $this->cards->pickCards(5, 'deck', $current_player_id);
+                $card_count = count($this->cards->getCardsInLocation('hand', $current_player_id));
                 self::notifyAllPlayers(
                     'discardAndDrawCards',
                     clienttranslate('${player_name} discards their hand and draws 5 cards'),
                     array (
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
+                        'card_count' => $card_count,
                     )
                 );
                 self::notifyPlayer(
@@ -816,7 +852,8 @@ class SiegeOfCranes extends Table
                     array (
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
-                        'cards' => $cards
+                        'cards' => $cards,
+                        'card_count' => $card_count,
                     )
                 );
                 $this->gamestate->nextState('nextPlayer');
@@ -856,6 +893,11 @@ class SiegeOfCranes extends Table
                 }
 
                 // send notifications
+                $hand_count = array();
+                foreach ($players as $playerId => $player) {
+                    $hand_count[$playerId] = count($this->cards->getCardsInLocation('hand', $playerId));
+                }
+
                 $direction_name = 'left';
                 if ($direction == 1) {
                     $direction_name = 'right';
@@ -866,12 +908,14 @@ class SiegeOfCranes extends Table
 
                     self::notifyPlayer(
                         $player_id,
-                        'playerDiscardAndDrawCards',
-                        clienttranslate('All players pass their hand to the ${direction}'),
+                        'playersRotateHand',
+                        clienttranslate('All players pass their hand to the ${direction_name}'),
                         array (
                             'player_id' => $player_id,
                             'cards' => $cards,
-                            'direction' => $direction_name
+                            'direction' => $direction,
+                            'direction_name' => $direction_name,
+                            'hand_count' => $hand_count,
                         )
                     );
                 }
@@ -896,7 +940,7 @@ class SiegeOfCranes extends Table
                     array (
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
-                        'cards' => $cards
+                        'cards' => $cards,
                     )
                 );
                 $this->updateScores();

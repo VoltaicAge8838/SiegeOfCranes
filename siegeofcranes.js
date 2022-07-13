@@ -621,20 +621,21 @@ function (dojo, declare) {
             dojo.subscribe('addToCollection', this, "notif_addToCollection");
             dojo.subscribe('swapCollectionCards', this, "notif_swapCollectionCards");
             dojo.subscribe('newScores', this, "notif_newScores");
-            dojo.subscribe('drawCards', this, "notif_noOp");
+            dojo.subscribe('drawCards', this, "notif_updateHandCount");
             this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
-            dojo.subscribe('discardAndDrawCards', this, "notif_noOp");
+            dojo.subscribe('discardAndDrawCards', this, "notif_updateHandCount");
             this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.player_id);
+            dojo.subscribe('playersRotateHand', this, "notif_playersRotateHand");
             dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
             dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
             dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
-            dojo.subscribe('giveCards', this, "notif_noOp");
+            dojo.subscribe('giveCards', this, "notif_giveCards");
             this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
-            dojo.subscribe('playerGiveCards', this, "notif_discardCards");
-            dojo.subscribe('playerReceiveCards', this, "notif_playerDrawCards");
+            dojo.subscribe('playerGiveCards', this, "notif_playerGiveCards");
+            dojo.subscribe('playerReceiveCards', this, "notif_playerReceiveCards");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -658,6 +659,7 @@ function (dojo, declare) {
             notif.args.card_ids.forEach(cardId => {
                 this.addCardToCollection(notif.args.player_id, notif.args.type, cardId);
             });
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
         },
 
         notif_swapCollectionCards: function(notif) {
@@ -707,12 +709,41 @@ function (dojo, declare) {
             }
         },
 
-        notif_noOp: function(notif) {
-            // do nothing
+        notif_updateHandCount: function(notif) {
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+        },
+
+        notif_giveCards: function(notif) {
+            this.playersHandCount[notif.args.giver_id].setValue(notif.args.giver_card_count);
+            this.playersHandCount[notif.args.receiver_id].setValue(notif.args.receiver_card_count);
+        },
+
+        notif_playerGiveCards: function(notif) {
+            for (var card in notif.args.cards) {
+                this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id);
+            }
+            this.playersHandCount[notif.args.giver_id].setValue(notif.args.giver_card_count);
+            this.playersHandCount[notif.args.receiver_id].setValue(notif.args.receiver_card_count);
+        },
+
+        notif_playerReceiveCards: function(notif) {
+            this.addCardsToHand(notif.args.cards);
+            this.playersHandCount[notif.args.giver_id].setValue(notif.args.giver_card_count);
+            this.playersHandCount[notif.args.receiver_id].setValue(notif.args.receiver_card_count);
         },
 
         notif_playerDrawCards: function(notif) {
             this.addCardsToHand(notif.args.cards);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+        },
+
+        notif_playersRotateHand: function(notif) {
+            var cards = this.playerHand.getAllItems();
+            for (var card in cards) {
+                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id);
+            }
+            this.addCardsToHand(notif.args.cards);
+            // TODO: update card count
         },
 
         notif_playerDiscardAndDrawCards: function(notif) {
@@ -721,16 +752,19 @@ function (dojo, declare) {
                 this.discardCard(notif.args.player_id, cards[card].type, cards[card].id);
             }
             this.addCardsToHand(notif.args.cards);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
         },
 
         notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
         },
 
         notif_discardCards: function(notif) {
             for (var card in notif.args.cards) {
                 this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id);
             }
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
         },
 
         notif_discardCollectedCards: function(notif) {
