@@ -893,9 +893,9 @@ class SiegeOfCranes extends Table
                 }
 
                 // send notifications
-                $hand_count = array();
+                $players_card_count = array();
                 foreach ($players as $playerId => $player) {
-                    $hand_count[$playerId] = count($this->cards->getCardsInLocation('hand', $playerId));
+                    $players_card_count[$playerId] = count($this->cards->getCardsInLocation('hand', $playerId));
                 }
 
                 $direction_name = 'left';
@@ -915,7 +915,7 @@ class SiegeOfCranes extends Table
                             'cards' => $cards,
                             'direction' => $direction,
                             'direction_name' => $direction_name,
-                            'hand_count' => $hand_count,
+                            'players_card_count' => $players_card_count,
                         )
                     );
                 }

@@ -739,11 +739,15 @@ function (dojo, declare) {
 
         notif_playersRotateHand: function(notif) {
             var cards = this.playerHand.getAllItems();
-            for (var card in cards) {
-                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id);
+            for (var cardIndex in cards) {
+                this.discardCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id);
             }
             this.addCardsToHand(notif.args.cards);
-            // TODO: update card count
+
+            var playersCardCount = notif.args.players_card_count;
+            for (var playerId in playersCardCount) {
+                this.playersHandCount[playerId].setValue(playersCardCount[playerId]);
+            }
         },
 
         notif_playerDiscardAndDrawCards: function(notif) {
