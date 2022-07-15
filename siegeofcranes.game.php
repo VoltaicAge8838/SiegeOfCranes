@@ -903,7 +903,10 @@ class SiegeOfCranes extends Table
                     $direction_name = 'right';
                 }
 
-                foreach ($players as $player_id => $player) {
+                $player_ids_except_last = array_slice(array_keys($players), 0, -1);
+                $prev_player_id = $player_ids_except_last[array_key_last($player_ids_except_last)];
+                $player_id = array_key_last($players);
+                foreach ($players as $next_player_id => $player) {
                     $cards = $this->cards->getCardsInLocation('hand', $player_id);
 
                     self::notifyPlayer(
@@ -913,11 +916,15 @@ class SiegeOfCranes extends Table
                         array (
                             'player_id' => $player_id,
                             'cards' => $cards,
-                            'direction' => $direction,
                             'direction_name' => $direction_name,
                             'players_card_count' => $players_card_count,
+                            'prev_player_id' => $prev_player_id,
+                            'next_player_id' => $next_player_id,
                         )
                     );
+
+                    $prev_player_id = $player_id;
+                    $player_id = $next_player_id;
                 }
                 $this->gamestate->nextState('nextPlayer');
                 break;

@@ -267,7 +267,7 @@ function (dojo, declare) {
             this.playersCollection[playerId].addToStockWithId(type, cardId);
         },
 
-        discardCard: function(playerId, type, cardId) {
+        discardCard: function(playerId, type, cardId, destination='discard') {
             console.log('discardCard', playerId, type, cardId);
             var sourceId = 'overall_player_board_' + playerId;
             if ($('myhand_item_' + cardId)) {
@@ -283,9 +283,9 @@ function (dojo, declare) {
                         card_id: cardId
                     }
                 ),
-                'discard',
+                destination,
                 sourceId,
-                'discard'
+                destination
             ).play();
         },
 
@@ -308,11 +308,12 @@ function (dojo, declare) {
             ).play();
         },
 
-        addCardsToHand: function(cards) {
+        addCardsToHand: function(cards, source='deck') {
+            console.log('addCardsToHand', source);
             this.slideTemporaryObject(
-                this.format_block('jstpl_cardback', {}),
+                this.format_block('jstpl_cardback', {id: 1}),
                 'myhand',
-                'deck',
+                source,
                 'myhand'
             ).play();
             for (var cardIndex in cards) {
@@ -738,11 +739,23 @@ function (dojo, declare) {
         },
 
         notif_playersRotateHand: function(notif) {
+            console.log('notif_playersRotateHand', notif.args);
             var cards = this.playerHand.getAllItems();
             for (var cardIndex in cards) {
-                this.discardCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id);
+                this.discardCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id, 'overall_player_board_' + notif.args.next_player_id);
             }
-            this.addCardsToHand(notif.args.cards);
+            this.addCardsToHand(notif.args.cards, 'overall_player_board_' + notif.args.prev_player_id);
+
+            // var lastPlayerId = notif.args.player_order[notif.args.player_order.length - 1];
+            // for (var playerId in notif.args.player_order) {
+            //     this.slideTemporaryObject(
+            //         this.format_block('jstpl_cardback', {id: 1}),
+            //         'overall_player_board_' + playerId,
+            //         'overall_player_board_' + lastPlayerId,
+            //         'overall_player_board_' + playerId
+            //     ).play();
+            //     lastPlayerId = playerId;
+            // }
 
             var playersCardCount = notif.args.players_card_count;
             for (var playerId in playersCardCount) {
