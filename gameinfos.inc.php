@@ -10,9 +10,9 @@
 
 */
 
-$gameinfos = array( 
+$gameinfos = array(
 
-// Name of the game in English (will serve as the basis for translation) 
+// Name of the game in English (will serve as the basis for translation)
 'game_name' => "Siege of Cranes",
 
 // Game designer (or game designers, separated by commas)
@@ -68,7 +68,7 @@ $gameinfos = array(
 // Example: 'tie_breaker_description' => totranslate( "Number of remaining cards in hand" ),
 'tie_breaker_description' => "",
 
-// If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
+// If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players
 'losers_not_ranked' => false,
 
@@ -76,7 +76,7 @@ $gameinfos = array(
 'solo_mode_ranked' => false,
 
 // Game is "beta". A game MUST set is_beta=1 when published on BGA for the first time, and must remains like this until all bugs are fixed.
-'is_beta' => 1,                     
+'is_beta' => 1,
 
 // Is this game cooperative (all players wins together or loose together)
 'is_coop' => 0,
@@ -131,7 +131,7 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-//    totranslate("This wonderful game is about geometric shapes!"),
+    totranslate("A fast-paced card game where players compete to gather the largest assembly of animals."),
 //    totranslate("It was awarded best triangle game of the year in 2005 and nominated for the Spiel des Jahres."),
 //    ...
 ),
