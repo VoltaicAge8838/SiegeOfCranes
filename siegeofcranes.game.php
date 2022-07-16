@@ -375,11 +375,7 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("Invalid direction: $direction"));
         }
 
-        $direction_name = 'left';
-        if ($direction == 1) {
-            $direction_name = 'right';
-        }
-
+        $direction_name = $this->direction_names[$direction];
         $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
@@ -391,7 +387,6 @@ class SiegeOfCranes extends Table
             'playAction',
             clienttranslate('${player_name} plays ${type_displayed} and will have all players pass their hand to the ${direction}'),
             array (
-                'i18n' => array('type_displayed'),
                 'card_id' => $card_id,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
@@ -438,7 +433,6 @@ class SiegeOfCranes extends Table
             'playAction',
             clienttranslate('${player_name} plays ${card_name} and will swap ${target1_player_name}\'s ${target1_card_name} with ${target2_player_name}\'s ${target2_card_name}'),
             array (
-                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
@@ -477,7 +471,6 @@ class SiegeOfCranes extends Table
             'playAction',
             clienttranslate('${player_name} plays ${card_name} to receive two cards from ${target_player_name}'),
             array (
-                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
@@ -577,7 +570,6 @@ class SiegeOfCranes extends Table
             'playFox',
             clienttranslate('${player_name} plays ${type_displayed} to affect ${target_type_displayed}'),
             array (
-                'i18n' => array('type_displayed'),
                 'player_id' => $player_id,
                 'player_name' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
@@ -620,7 +612,6 @@ class SiegeOfCranes extends Table
             'playAction',
             clienttranslate('${player_name} plays ${type_displayed} to discard the last collected cards'),
             array (
-                'i18n' => array('type_displayed'),
                 'player_id' => $player_id,
                 'player_name' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
@@ -669,7 +660,6 @@ class SiegeOfCranes extends Table
             'addToCollection',
             clienttranslate('${player_name} adds ${type_displayed} to their collection'),
             array (
-                'i18n' => array('type_displayed'),
                 'card_ids' => $card_ids,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
@@ -715,7 +705,6 @@ class SiegeOfCranes extends Table
             'discardKangarooCards',
             clienttranslate('${player_name} discards ${types_string}'),
             array (
-                'i18n' => array('types_string'),
                 'cards' => $discard_cards,
                 'player_id' => $player_id,
                 'player_name' => self::getCurrentPlayerName(),
@@ -815,7 +804,6 @@ class SiegeOfCranes extends Table
                     'swapCollectionCards',
                     clienttranslate('${target1_player_name}\'s ${target1_card_name} swapped with ${target2_player_name}\'s ${target2_card_name}'),
                     array (
-                        'i18n' => array('target1_player_name', 'target1_card_name' ,'target2_player_name' ,'target2_card_name'),
                         'target1_player_name' => $players[$player1_id]['player_name'],
                         'target1_player_id' => $player1_id,
                         'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
@@ -898,11 +886,7 @@ class SiegeOfCranes extends Table
                     $players_card_count[$playerId] = count($this->cards->getCardsInLocation('hand', $playerId));
                 }
 
-                $direction_name = 'left';
-                if ($direction == 1) {
-                    $direction_name = 'right';
-                }
-
+                $direction_name = $this->direction_names[$direction];
                 $player_ids_except_last = array_slice(array_keys($players), 0, -1);
                 $prev_player_id = $player_ids_except_last[array_key_last($player_ids_except_last)];
                 $player_id = array_key_last($players);

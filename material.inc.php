@@ -19,6 +19,10 @@
  *
  */
 
+$this->direction_names = array(
+    0 => clienttranslate('left'),
+    1 => clienttranslate('right'),
+);
 
 $this->card_types = array(
     1 => array(
