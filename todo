@@ -1,0 +1,14 @@
+more than one card moving for "draw card" animation
+disable "play fox/crane" button unless crane or fox is selected
+~3 second timer to auto-pass for crane & fox play
+select only one card for play
+highlight collections for rat selection
+disable selecting hand cards for rat selection
+update discard pile
+no background for draw/discard piles
+card depth for draw/discard piles?
+zombie turn (always draw cards)
+tie breaker logic
+disable play/collect buttons while no card is selected
+change layout: my hand on right/top, circle of players on left/bottom
+fix discard animation on finch action

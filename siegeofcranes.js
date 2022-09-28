@@ -52,7 +52,7 @@ function (dojo, declare) {
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
 
-        setup: function( gamedatas )
+        setup: function(gamedatas)
         {
             console.log( "Starting game setup" );
 
@@ -70,7 +70,6 @@ function (dojo, declare) {
             this.playersCollection = [];
             this.playersHandCount = [];
             for (var playerId in gamedatas.players) {
-                // var player = gamedatas.players[playerId];
                 this.playersCollection[playerId] = this.setupStock(`playercollection_${playerId}`, 'icons.gif', this.iconWidth, this.iconHeight);
 
                 this.playersHandCount[playerId] = new ebg.counter();
@@ -82,20 +81,26 @@ function (dojo, declare) {
             for (i in this.gamedatas.collections) {
                 var card = this.gamedatas.collections[i];
                 var playerId = card.location_arg;
-                // this.playersCollection[playerId].addToStockWithId(card.type, card.id);
                 this.addCardToCollection(playerId, card.type, card.id);
             }
 
-            // Setting up player boards
-            // for (var playerId in gamedatas.players) {
-            //     var player = gamedatas.players[playerId];
+            this.secondDeck = gamedatas.seconddeck;
 
-            //     // Setting up players boards if needed
-            //     var player_board_div = $('player_board_'+playerId);
-            //     dojo.place(this.format_block('jstpl_player_board', player), player_board_div);
-            // }
+            // setup deck counter
+            this.deckCount = new ebg.counter();
+            this.deckCount.create('deckcount');
+            this.deckCount.setValue(gamedatas.deckcount);
 
-            // dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
+            // setup discard counter
+            this.discardCount = new ebg.counter();
+            this.discardCount.create('discardcount');
+            this.discardCount.setValue(gamedatas.discardcount);
+
+            if (this.gamedatas.topdiscardcard) {
+                var type = this.gamedatas.topdiscardcard.type;
+                dojo.addClass('discard', 'cardontable');
+                dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
+            }
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -231,6 +236,14 @@ function (dojo, declare) {
 
         */
 
+        cardTypeX: function(type) {
+            return this.cardWidth * ((type - 1) % 5);
+        },
+
+        cardTypeY: function(type) {
+            return this.cardHeight * Math.floor((type - 1) / 5);
+        },
+
         setupStock: function(templateName, imageName, width, height) {
             var stock = new ebg.stock(); // new stock object for hand
             stock.create(this, $(templateName), width, height);
@@ -254,8 +267,8 @@ function (dojo, declare) {
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardWidth * ((type - 1) % 5),
-                        y: this.cardHeight * Math.floor((type - 1) / 5),
+                        x: this.cardTypeX(type),
+                        y: this.cardTypeY(type),
                         card_id: cardId
                     }
                 ),
@@ -274,26 +287,28 @@ function (dojo, declare) {
                 sourceId = 'myhand_item_' + cardId;
                 this.playerHand.removeFromStockById(cardId);
             }
-            this.slideTemporaryObject(
+            var animation = this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardWidth * ((type - 1) % 5),
-                        y: this.cardHeight * Math.floor((type - 1) / 5),
-                        card_id: cardId
+                        x: this.cardTypeX(type),
+                        y: this.cardTypeY(type),
+                        card_id: cardId + 't'
                     }
                 ),
                 destination,
                 sourceId,
                 destination
-            ).play();
+            );
+            dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', type));
+            animation.play();
         },
 
         discardCollectedCard: function(playerId, type, cardId) {
             console.log('discardCard', playerId, type, cardId);
             var sourceId = 'playercollection_' + playerId;
             this.playersCollection[playerId].removeFromStockById(cardId);
-            this.slideTemporaryObject(
+            var animation = this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
@@ -305,7 +320,9 @@ function (dojo, declare) {
                 'discard',
                 sourceId,
                 'discard'
-            ).play();
+            );
+            dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', type));
+            animation.play();
         },
 
         addCardsToHand: function(cards, source='deck') {
@@ -334,6 +351,11 @@ function (dojo, declare) {
                 function(isError) {}
             );
             this.playerHand.unselectAll();
+        },
+
+        updateTopDiscardCard: function(cardType) {
+            dojo.addClass('discard', 'cardontable');
+            dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
         },
 
 
@@ -627,8 +649,8 @@ function (dojo, declare) {
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
             dojo.subscribe('discardAndDrawCards', this, "notif_updateHandCount");
             this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.player_id);
-            dojo.subscribe('playersRotateHand', this, "notif_playersRotateHand");
             dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
+            dojo.subscribe('playersRotateHand', this, "notif_playersRotateHand");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
             dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
@@ -637,6 +659,7 @@ function (dojo, declare) {
             this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
             dojo.subscribe('playerGiveCards', this, "notif_playerGiveCards");
             dojo.subscribe('playerReceiveCards', this, "notif_playerReceiveCards");
+            dojo.subscribe('shuffleDiscard', this, "notif_shuffleDiscard");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -712,6 +735,13 @@ function (dojo, declare) {
 
         notif_updateHandCount: function(notif) {
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            if (notif.args.second_deck > this.secondDeck || (notif.args.second_deck == this.secondDeck && notif.args.deck_count < this.deckCount.getValue())) {
+                this.deckCount.setValue(notif.args.deck_count);
+                this.secondDeck = notif.args.second_deck;
+            }
+            if (notif.args.discard_count) {
+                this.discardCount.setValue(notif.args.discard_count);
+            }
         },
 
         notif_giveCards: function(notif) {
@@ -736,6 +766,10 @@ function (dojo, declare) {
         notif_playerDrawCards: function(notif) {
             this.addCardsToHand(notif.args.cards);
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            if (notif.args.second_deck > this.secondDeck || (notif.args.second_deck == this.secondDeck && notif.args.deck_count < this.deckCount.getValue())) {
+                this.deckCount.setValue(notif.args.deck_count);
+                this.secondDeck = notif.args.second_deck;
+            }
         },
 
         notif_playersRotateHand: function(notif) {
@@ -745,17 +779,6 @@ function (dojo, declare) {
                 this.discardCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id, 'overall_player_board_' + notif.args.next_player_id);
             }
             this.addCardsToHand(notif.args.cards, 'overall_player_board_' + notif.args.prev_player_id);
-
-            // var lastPlayerId = notif.args.player_order[notif.args.player_order.length - 1];
-            // for (var playerId in notif.args.player_order) {
-            //     this.slideTemporaryObject(
-            //         this.format_block('jstpl_cardback', {id: 1}),
-            //         'overall_player_board_' + playerId,
-            //         'overall_player_board_' + lastPlayerId,
-            //         'overall_player_board_' + playerId
-            //     ).play();
-            //     lastPlayerId = playerId;
-            // }
 
             var playersCardCount = notif.args.players_card_count;
             for (var playerId in playersCardCount) {
@@ -770,11 +793,16 @@ function (dojo, declare) {
             }
             this.addCardsToHand(notif.args.cards);
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.deckCount.setValue(notif.args.deck_count);
+            this.discardCount.setValue(notif.args.discard_count);
         },
+
+        // TODO: display top discard card
 
         notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.discardCount.setValue(notif.args.discard_count);
         },
 
         notif_discardCards: function(notif) {
@@ -782,6 +810,7 @@ function (dojo, declare) {
                 this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id);
             }
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.discardCount.setValue(notif.args.discard_count);
         },
 
         notif_discardCollectedCards: function(notif) {
@@ -789,6 +818,21 @@ function (dojo, declare) {
             for (var card in notif.args.cards) {
                 this.discardCollectedCard(notif.args.cards[card].location_arg, notif.args.cards[card].type, notif.args.cards[card].id);
             }
+            this.discardCount.setValue(notif.args.discard_count);
+        },
+
+        notif_shuffleDiscard: function(notif) {
+            this.deckCount.setValue(this.discardCount.getValue());
+            this.discardCount.setValue(0);
+
+            dojo.addClass('discard', 'cardontable');
+            dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
+            this.slideTemporaryObject(
+                this.format_block('jstpl_cardback', {id: 1}),
+                'deck',
+                'discard',
+                'deck'
+            ).play();
         },
    });
 });

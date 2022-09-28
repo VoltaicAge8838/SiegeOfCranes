@@ -72,14 +72,6 @@
     grid-template-columns: 1fr 2fr 1fr;
 }
 
-/* #playertables {
-    position: relative;
-}
-
-.playertablename {
-    font-weight: bold;
-}*/
-
 .center {
     display: flex;
 }
@@ -92,42 +84,19 @@
     width: 30%;
 }
 
-/* .playertable { */
-    /* text-align: center; */
-    /* width: 30%; */
-    /* height: 250px; */
-/* } */
-
-/* .playercollection {
-    display: inline-block;
-    position: relative;
-    margin-top: 5px;
+.card {
+    border-radius: 8px;
     width: 100px;
     height: 143px;
-} */
+}
 
 .cardontable {
-    border-radius: 8px;
     position: absolute;
-    width: 100px;
-    height: 143px;
     background-image: url('img/cards.jpg');
 }
 
 .cardback {
-    border-radius: 8px;
-    width: 100px;
-    height: 143px;
     background-image: url('img/card_back.jpg');
-}
-
-.discardback {
-    width: 100px;
-    height: 143px;
-}
-
-.card {
-    border-radius: 8px;
 }
 
 .whiteblock {
