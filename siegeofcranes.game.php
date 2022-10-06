@@ -882,11 +882,9 @@ class SiegeOfCranes extends Table
 
                 // TODO: fix draw logic to shuffle the deck when empty
 
-                $top_discard_id = self::getGameStateValue("top_discard_id");
-                if (count($this->cards->getCardsInLocation('hand', $current_player_id)) > 0) {
-                    $top_discard_id = array_key_first($this->cards->getCardsInLocation('hand', $current_player_id));
-                }
-                $top_discard_type = $this->cards->getCard($top_discard_id)['type'];
+                // forcing the panda card to be the top card on the discard pile
+                $top_discard_id = $card_id;
+                $top_discard_type = $currentCard['type'];
                 self::setGameStateValue("top_discard_id", $top_discard_id);
                 $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
                 $cards = $this->cards->pickCards(5, 'deck', $current_player_id);
