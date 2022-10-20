@@ -71,7 +71,7 @@ function (dojo, declare) {
             this.playersHandCount = [];
             for (var playerId in gamedatas.players) {
                 this.playersCollection[playerId] = this.setupStock(`playercollection_${playerId}`, 'icons.gif', this.iconWidth, this.iconHeight);
-
+                this.playersCollection[playerId].extraClasses='token';
                 this.playersHandCount[playerId] = new ebg.counter();
                 this.playersHandCount[playerId].create('handcount_' + playerId);
                 this.playersHandCount[playerId].setValue(gamedatas.players[playerId].handcount);
@@ -209,19 +209,6 @@ function (dojo, declare) {
                         this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
                         this.addActionButton('passCrane_button', _('Pass'), 'passCrane');
                         break;
-
-/*
-                 Example:
-
-                 case 'myGameState':
-
-                    // Add 3 action buttons in the action status bar:
-
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
-                    break;
-*/
                 }
             }
         },
@@ -257,73 +244,58 @@ function (dojo, declare) {
             return stock;
         },
 
-        addCardToCollection: function(playerId, type, cardId) {
-            var sourceId = 'overall_player_board_' + playerId;
-            if ($('myhand_item_' + cardId)) {
-                sourceId = 'myhand_item_' + cardId;
-                this.playerHand.removeFromStockById(cardId);
-            }
-            this.slideTemporaryObject(
+        moveCardAnimation: function(source, destination, cardType, cardId) {
+            return this.slideTemporaryObject(
                 this.format_block(
                     'jstpl_cardontable',
                     {
-                        x: this.cardTypeX(type),
-                        y: this.cardTypeY(type),
-                        card_id: cardId
-                    }
-                ),
-                'playercollection_' + playerId,
-                sourceId,
-                'playercollection_' + playerId
-            ).play();
-
-            this.playersCollection[playerId].addToStockWithId(type, cardId);
-        },
-
-        discardCard: function(playerId, type, cardId, destination='discard', topDiscardType) {
-            console.log('discardCard', playerId, type, cardId);
-            var sourceId = 'overall_player_board_' + playerId;
-            if ($('myhand_item_' + cardId)) {
-                sourceId = 'myhand_item_' + cardId;
-                this.playerHand.removeFromStockById(cardId);
-            }
-            var animation = this.slideTemporaryObject(
-                this.format_block(
-                    'jstpl_cardontable',
-                    {
-                        x: this.cardTypeX(type),
-                        y: this.cardTypeY(type),
+                        x: this.cardTypeX(cardType),
+                        y: this.cardTypeY(cardType),
                         card_id: cardId + 't'
                     }
                 ),
                 destination,
-                sourceId,
+                source,
                 destination
             );
-            if (destination === 'discard') {
-                dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', topDiscardType || type));
+        },
+
+        addCardToCollection: function(playerId, cardType, cardId) {
+            var source = 'overall_player_board_' + playerId;
+            if ($('myhand_item_' + cardId)) {
+                source = 'myhand_item_' + cardId;
+                this.playerHand.removeFromStockById(cardId);
             }
+            this.moveCardAnimation(source, 'playercollection_' + playerId, cardType, cardId).play();
+
+            this.playersCollection[playerId].addToStockWithId(cardType, cardId);
+        },
+
+        giveCard: function(playerId, cardType, cardId, destination) {
+            var source = 'overall_player_board_' + playerId;
+            if ($('myhand_item_' + cardId)) {
+                source = 'myhand_item_' + cardId;
+                this.playerHand.removeFromStockById(cardId);
+            }
+            this.moveCardAnimation(source, destination, cardType, cardId).play();
+        },
+
+        discardCard: function(playerId, cardType, cardId, topDiscardType) {
+            var source = 'overall_player_board_' + playerId;
+            if ($('myhand_item_' + cardId)) {
+                source = 'myhand_item_' + cardId;
+                this.playerHand.removeFromStockById(cardId);
+            }
+            var animation = this.moveCardAnimation(source, 'discard', cardType, cardId);
+            dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', topDiscardType || cardType));
             animation.play();
         },
 
-        discardCollectedCard: function(playerId, type, cardId) {
-            console.log('discardCard', playerId, type, cardId);
-            var sourceId = 'playercollection_' + playerId;
+        discardCollectedCard: function(playerId, cardType, cardId) {
+            var source = 'playercollection_' + playerId;
             this.playersCollection[playerId].removeFromStockById(cardId);
-            var animation = this.slideTemporaryObject(
-                this.format_block(
-                    'jstpl_cardontable',
-                    {
-                        x: this.cardWidth * ((type - 1) % 5),
-                        y: this.cardHeight * Math.floor((type - 1) / 5),
-                        card_id: cardId
-                    }
-                ),
-                'discard',
-                sourceId,
-                'discard'
-            );
-            dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', type));
+            var animation = this.moveCardAnimation(source, 'discard', cardType, cardId);
+            dojo.connect(animation, 'onEnd', dojo.hitch(this, 'updateTopDiscardCard', cardType));
             animation.play();
         },
 
@@ -349,10 +321,14 @@ function (dojo, declare) {
                 "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
                 data,
                 this,
-                function(result) {},
+                function(result) {
+                    this.playerHand.unselectAll();
+                    for (playerId in this.playersCollection) {
+                        this.playersCollection[playerId].unselectAll();
+                    }
+                },
                 function(isError) {}
             );
-            this.playerHand.unselectAll();
         },
 
         updateTopDiscardCard: function(cardType) {
@@ -375,48 +351,12 @@ function (dojo, declare) {
 
         */
 
-        /* Example:
-
-        onMyMethodToCall1: function( evt )
-        {
-            console.log( 'onMyMethodToCall1' );
-
-            // Preventing default browser reaction
-            dojo.stopEvent( evt );
-
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'myAction' ) )
-            {   return; }
-
-            this.ajaxcall( "/siegeofcranes/siegeofcranes/myAction.html", {
-                                                                    lock: true,
-                                                                    myArgument1: arg1,
-                                                                    myArgument2: arg2,
-                                                                    ...
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( isError) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
-        },
-
-        */
-
         playFerret: function(cardId, direction) {
             this.ajaxAction('playFerret', {
                 id: cardId,
                 direction: direction,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         playFinch: function(cardId, giverId) {
@@ -425,8 +365,6 @@ function (dojo, declare) {
                 giver_id: giverId,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         playRat: function(cardId) {
@@ -445,9 +383,6 @@ function (dojo, declare) {
                 target2_id: targets[1].id,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
-            this.playersCollection[playerId].unselectAll();
         },
 
         cancelAction: function() {
@@ -505,7 +440,6 @@ function (dojo, declare) {
                         id: cardId,
                         lock: true
                     });
-                    this.playerHand.unselectAll();
             }
         },
 
@@ -533,8 +467,6 @@ function (dojo, declare) {
                 ids: cardIds,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         discardCards: function() {
@@ -545,8 +477,6 @@ function (dojo, declare) {
                 ids: cardIds,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         giveCards: function() {
@@ -562,8 +492,6 @@ function (dojo, declare) {
                 target2_id: items[1].id,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         drawCards: function() {
@@ -583,8 +511,6 @@ function (dojo, declare) {
                 id: items[0].id,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         passFox: function() {
@@ -604,8 +530,6 @@ function (dojo, declare) {
                 id: items[0].id,
                 lock: true
             });
-
-            this.playerHand.unselectAll();
         },
 
         passCrane: function() {
@@ -629,20 +553,6 @@ function (dojo, declare) {
         */
         setupNotifications: function()
         {
-            console.log( 'notifications subscriptions setup' );
-
-            // TODO: here, associate your game notifications with local methods
-
-            // Example 1: standard notification handling
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-
-            // Example 2: standard notification handling + tell the user interface to wait
-            //            during 3 seconds after calling the method in order to let the players
-            //            see what is happening in the game.
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-            //
-
             dojo.subscribe('addToCollection', this, "notif_addToCollection");
             dojo.subscribe('swapCollectionCards', this, "notif_swapCollectionCards");
             dojo.subscribe('newScores', this, "notif_newScores");
@@ -663,23 +573,6 @@ function (dojo, declare) {
             dojo.subscribe('playerReceiveCards', this, "notif_playerReceiveCards");
             dojo.subscribe('shuffleDiscard', this, "notif_shuffleDiscard");
         },
-
-        // TODO: from this point and below, you can write your game notifications handling methods
-
-        /*
-        Example:
-
-        notif_cardPlayed: function( notif )
-        {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-
-            // TODO: play the card in the user interface.
-        },
-
-        */
 
         notif_addToCollection: function(notif) {
             notif.args.card_ids.forEach(cardId => {
@@ -753,7 +646,7 @@ function (dojo, declare) {
 
         notif_playerGiveCards: function(notif) {
             for (var card in notif.args.cards) {
-                this.discardCard(notif.args.giver_id, notif.args.cards[card].type, notif.args.cards[card].id, 'overall_player_board_' + notif.args.receiver_id);
+                this.giveCard(notif.args.giver_id, notif.args.cards[card].type, notif.args.cards[card].id, 'overall_player_board_' + notif.args.receiver_id);
             }
             this.playersHandCount[notif.args.giver_id].setValue(notif.args.giver_card_count);
             this.playersHandCount[notif.args.receiver_id].setValue(notif.args.receiver_card_count);
@@ -778,7 +671,7 @@ function (dojo, declare) {
             console.log('notif_playersRotateHand', notif.args);
             var cards = this.playerHand.getAllItems();
             for (var cardIndex in cards) {
-                this.discardCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id, 'overall_player_board_' + notif.args.next_player_id);
+                this.giveCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id, 'overall_player_board_' + notif.args.next_player_id);
             }
             this.addCardsToHand(notif.args.cards, 'overall_player_board_' + notif.args.prev_player_id);
 
@@ -791,7 +684,7 @@ function (dojo, declare) {
         notif_playerDiscardAndDrawCards: function(notif) {
             var cards = this.playerHand.getAllItems();
             for (var card in cards) {
-                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id, 'discard', notif.args.top_discard_type);
+                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id, notif.args.top_discard_type);
             }
             this.addCardsToHand(notif.args.cards);
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
@@ -809,7 +702,7 @@ function (dojo, declare) {
 
         notif_discardCards: function(notif) {
             for (var card in notif.args.cards) {
-                this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id, 'discard', notif.args.top_discard_type);
+                this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id, notif.args.top_discard_type);
             }
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
             this.discardCount.setValue(notif.args.discard_count);
