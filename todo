@@ -10,3 +10,4 @@ tie breaker logic
 disable play/collect buttons while no card is selected
 change layout: my hand on right/top, circle of players on left/bottom
 kangaroo discard count check
+compute game progression

@@ -52,10 +52,6 @@ class SiegeOfCranes extends Table
                "collected_card_id9" => 26,
                "second_deck" => 27,
                "top_discard_id" => 28,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
         ) );
         $this->cards = self::getNew("module.common.deck");
         $this->cards->init("card");
@@ -326,32 +322,6 @@ class SiegeOfCranes extends Table
     /*
         Each time a player is doing some game action, one of the methods below is called.
         (note: each method below must match an input method in siegeofcranes.action.php)
-    */
-
-    /*
-
-    Example:
-
-    function playCard( $card_id )
-    {
-        // Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
-        self::checkAction( 'playCard' );
-
-        $player_id = self::getActivePlayerId();
-
-        // Add your game logic to play a card there
-        ...
-
-        // Notify all players about the card played
-        self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
-            'player_id' => $player_id,
-            'player_name' => self::getActivePlayerName(),
-            'card_name' => $card_name,
-            'card_id' => $card_id
-        ) );
-
-    }
-
     */
 
     function playAction($card_id) {
@@ -792,23 +762,6 @@ class SiegeOfCranes extends Table
         game state.
     */
 
-    /*
-
-    Example for game state "MyGameState":
-
-    function argMyGameState()
-    {
-        // Get some values from the current game situation in database...
-
-        // return values:
-        return array(
-            'variable1' => $value1,
-            'variable2' => $value2,
-            ...
-        );
-    }
-    */
-
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
 ////////////
@@ -816,19 +769,6 @@ class SiegeOfCranes extends Table
     /*
         Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
         The action method of state X is called everytime the current game state is set to X.
-    */
-
-    /*
-
-    Example for game state "MyGameState":
-
-    function stMyGameState()
-    {
-        // Do some stuff ...
-
-        // (very often) go to another gamestate
-        $this->gamestate->nextState( 'some_gamestate_transition' );
-    }
     */
 
     function stNextPlayer() {
