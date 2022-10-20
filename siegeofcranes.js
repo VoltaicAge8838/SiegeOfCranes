@@ -182,12 +182,16 @@ function (dojo, declare) {
                         break;
 
                     case 'waitForUndoFoxes':
-                        this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
+                        if (this.playerHand.getAllItems().find(card => card.type == 4)) {
+                            this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
+                        }
                         this.addActionButton('passFox_button', _('Pass'), 'passFox');
                         break;
 
                     case 'waitForRedoFoxes':
-                        this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
+                        if (this.playerHand.getAllItems().find(card => card.type == 4)) {
+                            this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
+                        }
                         this.addActionButton('passFox_button', _('Pass'), 'passFox');
                         break;
 
@@ -206,7 +210,9 @@ function (dojo, declare) {
                         break;
 
                     case 'waitForCranes':
-                        this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
+                        if (this.playerHand.getAllItems().find(card => card.type == 8)) {
+                            this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
+                        }
                         this.addActionButton('passCrane_button', _('Pass'), 'passCrane');
                         break;
                 }
