@@ -52,6 +52,7 @@ class SiegeOfCranes extends Table
                "collected_card_id9" => 26,
                "second_deck" => 27,
                "top_discard_id" => 28,
+               "progress_total" => 29,
         ) );
         $this->cards = self::getNew("module.common.deck");
         $this->cards->init("card");
@@ -124,6 +125,7 @@ class SiegeOfCranes extends Table
             $cards = $this->cards->pickCards(5, 'deck', $player_id);
         }
 
+        self::setGameStateValue("progress_total", count($this->cards->getCardsInLocation('deck')));
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -188,9 +190,7 @@ class SiegeOfCranes extends Table
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        return 50 - (50 * count($this->cards->getCardsInLocation('deck')) / self::getGameStateValue("progress_total")) + (self::getGameStateValue('second_deck') * 50);
     }
 
 
@@ -264,6 +264,7 @@ class SiegeOfCranes extends Table
                 self::setGameStateValue('second_deck', 1);
                 $this->cards->moveAllCardsInLocation('discard', 'deck');
                 $this->cards->shuffle('deck');
+                self::setGameStateValue("progress_total", count($this->cards->getCardsInLocation('deck')));
 
                 self::notifyAllPlayers(
                     'shuffleDiscard',
