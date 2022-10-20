@@ -726,8 +726,8 @@ function (dojo, declare) {
             this.deckCount.setValue(this.discardCount.getValue());
             this.discardCount.setValue(0);
 
-            dojo.addClass('discard', 'cardontable');
-            dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
+            dojo.removeClass('discard', 'cardontable');
+            dojo.style('discard', 'background-position', '');
             this.slideTemporaryObject(
                 this.format_block('jstpl_cardback', {id: 1}),
                 'deck',
