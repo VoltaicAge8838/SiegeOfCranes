@@ -102,6 +102,8 @@ function (dojo, declare) {
                 dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
             }
 
+            dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
+
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
@@ -179,6 +181,9 @@ function (dojo, declare) {
                         this.addActionButton('playAction_button', _('Play Action'), 'playAction');
                         this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
                         this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
+
+                        dojo.addClass('playAction_button', 'disabled');
+                        dojo.addClass('addToCollection_button', 'disabled');
                         break;
 
                     case 'waitForUndoFoxes':
@@ -356,6 +361,17 @@ function (dojo, declare) {
             _ make a call to the game server
 
         */
+
+        onPlayerHandSelectionChanged: function() {
+            var items = this.playerHand.getSelectedItems();
+            if (items.length > 0) {
+                dojo.removeClass('playAction_button', 'disabled');
+                dojo.removeClass('addToCollection_button', 'disabled');
+            } else {
+                dojo.addClass('playAction_button', 'disabled');
+                dojo.addClass('addToCollection_button', 'disabled');
+            }
+        },
 
         playFerret: function(cardId, direction) {
             this.ajaxAction('playFerret', {
