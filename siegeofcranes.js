@@ -364,12 +364,14 @@ function (dojo, declare) {
 
         onPlayerHandSelectionChanged: function() {
             var items = this.playerHand.getSelectedItems();
-            if (items.length > 0) {
-                dojo.removeClass('playAction_button', 'disabled');
-                dojo.removeClass('addToCollection_button', 'disabled');
-            } else {
-                dojo.addClass('playAction_button', 'disabled');
-                dojo.addClass('addToCollection_button', 'disabled');
+            if ($('playAction_button')) {
+                if (items.length > 0) {
+                    dojo.removeClass('playAction_button', 'disabled');
+                    dojo.removeClass('addToCollection_button', 'disabled');
+                } else {
+                    dojo.addClass('playAction_button', 'disabled');
+                    dojo.addClass('addToCollection_button', 'disabled');
+                }
             }
         },
 
