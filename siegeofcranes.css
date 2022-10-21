@@ -70,16 +70,17 @@
     border-radius: 8px;
     width: 100px;
     height: 143px;
-    box-shadow: 2px 2px 2px rgba(0,0,0,0.5);
 }
 
 .cardontable {
     position: absolute;
     background-image: url('img/cards.jpg');
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .cardback {
     background-image: url('img/card_back.jpg');
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .whiteblock {
@@ -88,6 +89,6 @@
 }
 
 .token {
-    box-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     border-radius: 50%;
 }
