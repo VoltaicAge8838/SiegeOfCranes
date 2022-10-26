@@ -64,6 +64,7 @@ function (dojo, declare) {
             for (var i in this.gamedatas.hand) {
                 var card = this.gamedatas.hand[i];
                 this.playerHand.addToStockWithId(card.type, card.id);
+                this.addTooltip('myhand_item_' + card.id, this.gamedatas.cardTypes[card.type]['description'], '');
             }
 
             // Setting up all players' collections
@@ -321,6 +322,7 @@ function (dojo, declare) {
             for (var cardIndex in cards) {
                 var card = cards[cardIndex];
                 this.playerHand.addToStockWithId(card.type, card.id);
+                this.addTooltip('myhand_item_' + card.id, this.gamedatas.cardTypes[card.type]['description'], '');
             }
         },
 

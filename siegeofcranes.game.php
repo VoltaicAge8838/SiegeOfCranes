@@ -175,6 +175,8 @@ class SiegeOfCranes extends Table
 
         $result['seconddeck'] = self::getGameStateValue('second_deck');
 
+        $result['cardTypes'] = $this->card_types;
+
         return $result;
     }
 
