@@ -713,7 +713,7 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("Not enough cards selected to discard"));
         }
 
-        if (3 > count($player_cards)) {
+        if (3 > count($player_cards) && count($card_ids) > 0) {
             throw new BgaUserException(self::_("Too many cards selected to discard"));
         }
 
