@@ -5,7 +5,11 @@ select only one card for play
 highlight collections for rat selection
 disable selecting hand cards for rat selection
 card depth for draw/discard piles?
-zombie turn (always draw cards)
 tie breaker logic
 change layout: my hand on right/top, circle of players on left/bottom
 improve card info text
+send notification when discard is shuffled during jays action
+handle notifications for jays better
+fix draw logic to shuffle the deck when empty during pandas
+check that target cards belong to the giver (finch)
+finch - check target card number

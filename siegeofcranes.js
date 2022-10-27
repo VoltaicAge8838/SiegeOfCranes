@@ -718,8 +718,6 @@ function (dojo, declare) {
             this.discardCount.setValue(notif.args.discard_count);
         },
 
-        // TODO: display top discard card
-
         notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
             this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);

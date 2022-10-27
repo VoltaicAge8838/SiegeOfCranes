@@ -704,6 +704,7 @@ class SiegeOfCranes extends Table
             if (array_key_exists($id, $player_cards)) {
                 array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
                 array_push($types, $player_cards[$id]['type']);
+                // TODO: array_push($types, $this->card_types[$card['type']]['name']);
                 unset($player_cards[$id]);
                 $top_discard_id = $id;
             } else {
@@ -1023,9 +1024,11 @@ class SiegeOfCranes extends Table
 
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
+                case 'playerTurn':
+                    $this->gamestate->nextState('nextPlayer');
+                    break;
                 default:
-                    $this->gamestate->nextState( "zombiePass" );
-                	break;
+                    throw new BgaVisibleSystemException("Zombie mode not supported at this game state: ".$statename);
             }
 
             return;
@@ -1033,7 +1036,68 @@ class SiegeOfCranes extends Table
 
         if ($state['type'] === "multipleactiveplayer") {
             // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive( $active_player, '' );
+            switch ($statename) {
+                case 'kangarooDiscard':
+                    $player_cards = $this->cards->getCardsInLocation('hand', $active_player);
+
+                    if (count($player_cards) > 3) {
+                        $discard_cards = array_slice($player_cards, 3);
+                        $types = array();
+
+                        $top_discard_id = self::getGameStateValue("top_discard_id");
+
+                        foreach ($discard_cards as $key => $card) {
+                            array_push($types, $this->card_types[$card['type']]['name']);
+                            $top_discard_id = $card['id'];
+                            $this->cards->moveCard($card['id'], 'discard');
+                        }
+
+                        $card_count = count($this->cards->getCardsInLocation('hand', $active_player));
+                        $discard_count = count($this->cards->getCardsInLocation('discard'));
+                        self::setGameStateValue("top_discard_id", $top_discard_id);
+                        $top_discard_type = $this->cards->getCard($top_discard_id)['type'];
+
+                        $types_string = implode(', ', $types);
+
+                        self::notifyAllPlayers(
+                            'discardKangarooCards',
+                            clienttranslate('${player_name} discards ${types_string}'),
+                            array (
+                                'cards' => $discard_cards,
+                                'player_id' => $active_player,
+                                'player_name' => self::getCurrentPlayerName(),
+                                'types_string' => $types_string,
+                                'card_count' => $card_count,
+                                'discard_count' => $discard_count,
+                                'top_discard_id' => $top_discard_id,
+                                'top_discard_type' => $top_discard_type,
+                            )
+                        );
+                    }
+
+                    $this->gamestate->setPlayerNonMultiactive($active_player, 'nextPlayer');
+                    break;
+                case 'giveCards':
+                    $cards = $this->cards->getCardsInLocation('hand', $active_player);
+                    if (count($cards) >= 2) {
+                        $id1 = array_pop($cards)['id'];
+                        $id2 = array_pop($cards)['id'];
+                        $this->giveCards($id1, $id2);
+                    } else {
+                        $this->gamestate->setPlayerNonMultiactive($active_player, 'nextPlayer');
+                    }
+
+                    break;
+                case 'waitForUndoFoxes':
+                case 'waitForRedoFoxes':
+                    $this->gamestate->setPlayerNonMultiactive($active_player, 'passFox');
+                    break;
+                case 'waitForCranes':
+                    $this->gamestate->setPlayerNonMultiactive($active_player, 'passCrane');
+                    break;
+                default:
+                    throw new BgaVisibleSystemException("Zombie mode not supported at this game state: ".$statename);
+            }
 
             return;
         }
