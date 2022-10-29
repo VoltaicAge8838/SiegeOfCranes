@@ -58,6 +58,7 @@ function (dojo, declare) {
 
             // set up player hand
             this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardWidth, this.cardHeight);
+            this.playerHand.setSelectionMode(0);
             this.playerHand.extraClasses='card';
 
             // Cards in player's hand
@@ -72,6 +73,7 @@ function (dojo, declare) {
             this.playersHandCount = [];
             for (var playerId in gamedatas.players) {
                 this.playersCollection[playerId] = this.setupStock(`playercollection_${playerId}`, 'icons.gif', this.iconWidth, this.iconHeight);
+                this.playersCollection[playerId].setSelectionMode(0);
                 this.playersCollection[playerId].extraClasses='token';
                 this.playersHandCount[playerId] = new ebg.counter();
                 this.playersHandCount[playerId].create('handcount_' + playerId);
@@ -122,22 +124,28 @@ function (dojo, declare) {
         {
             console.log( 'Entering state: '+stateName );
 
-            switch( stateName )
-            {
+            switch(stateName) {
 
-            /* Example:
+                case 'selectMultipleCardsToCollect':
+                case 'kangarooDiscard':
+                case 'giveCards':
+                    this.playerHand.setSelectionMode(2);
+                    break;
 
-            case 'myGameState':
+                case 'playerTurn':
+                    this.playerHand.setSelectionMode(this.isCurrentPlayerActive() ? 1 : 0);
+                    break;
 
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
+                case 'selectCardToCollect':
+                case 'waitForUndoFoxes':
+                case 'waitForRedoFoxes':
+                case 'waitForCranes':
+                    this.playerHand.setSelectionMode(1);
+                    break;
 
-                break;
-           */
-
-
-            case 'dummmy':
-                break;
+                case 'dummmy':
+                    this.playerHand.setSelectionMode(0);
+                    break;
             }
         },
 
@@ -409,6 +417,10 @@ function (dojo, declare) {
                 target2_id: targets[1].id,
                 lock: true
             });
+
+            for (var playerId in this.gamedatas.players) {
+                this.playersCollection[playerId].setSelectionMode(0);
+            }
         },
 
         cancelAction: function() {
@@ -436,6 +448,10 @@ function (dojo, declare) {
                     this.removeActionButtons();
                     this.addActionButton('playRat_button', _('Swap cards'), this.playRat.bind(this, cardId));
                     this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+
+                    for (var playerId in this.gamedatas.players) {
+                        this.playersCollection[playerId].setSelectionMode(1);
+                    }
                     break;
 
                 case "5": // finch card
