@@ -257,9 +257,6 @@ class SiegeOfCranes extends Table
     function drawCards($number_of_cards, $player_id, $player_name) {
         $cards = $this->cards->pickCards($number_of_cards, 'deck', $player_id);
 
-        // TODO: send notification when discard is shuffled.
-        // TODO: handle notifications for Jays better
-
         $secondDeck = self::getGameStateValue('second_deck');
         if ($this->cards->countCardInLocation('deck') == 0) {
             if ($secondDeck == 0) {
@@ -703,8 +700,8 @@ class SiegeOfCranes extends Table
         foreach ($card_ids as $key => $id) {
             if (array_key_exists($id, $player_cards)) {
                 array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
-                array_push($types, $player_cards[$id]['type']);
-                // TODO: array_push($types, $this->card_types[$card['type']]['name']);
+                // array_push($types, $player_cards[$id]['type']);
+                array_push($types, $this->card_types[$player_cards[$id]['type']]['name']);
                 unset($player_cards[$id]);
                 $top_discard_id = $id;
             } else {
@@ -731,7 +728,7 @@ class SiegeOfCranes extends Table
         $types_string = implode(', ', $types);
 
         self::notifyAllPlayers(
-            'discardKangarooCards',
+            'discardCards',
             clienttranslate('${player_name} discards ${types_string}'),
             array (
                 'cards' => $discard_cards,
@@ -824,45 +821,27 @@ class SiegeOfCranes extends Table
                 break;
             case 2: // pandas
 
-                // TODO: fix draw logic to shuffle the deck when empty
-
                 // forcing the panda card to be the top card on the discard pile
                 $top_discard_id = $card_id;
                 $top_discard_type = $currentCard['type'];
                 self::setGameStateValue("top_discard_id", $top_discard_id);
+                $discard_cards = $this->cards->getCardsInLocation('hand', $current_player_id);
                 $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
-                $cards = $this->cards->pickCards(5, 'deck', $current_player_id);
-                $card_count = count($this->cards->getCardsInLocation('hand', $current_player_id));
-                $deck_count = count($this->cards->getCardsInLocation('deck'));
                 $discard_count = count($this->cards->getCardsInLocation('discard'));
                 self::notifyAllPlayers(
-                    'discardAndDrawCards',
-                    clienttranslate('${player_name} discards their hand and draws 5 cards'),
+                    'discardCards',
+                    clienttranslate('${player_name} discards their hand'),
                     array (
+                        'cards' => $discard_cards,
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
-                        'card_count' => $card_count,
-                        'deck_count' => $deck_count,
+                        'card_count' => 0,
                         'discard_count' => $discard_count,
                         'top_discard_id' => $top_discard_id,
                         'top_discard_type' => $top_discard_type,
                     )
                 );
-                self::notifyPlayer(
-                    $current_player_id,
-                    'playerDiscardAndDrawCards',
-                    clienttranslate('${player_name} discards their hand and draws 5 cards'),
-                    array (
-                        'player_id' => $current_player_id,
-                        'player_name' => $current_player_name,
-                        'cards' => $cards,
-                        'card_count' => $card_count,
-                        'deck_count' => $deck_count,
-                        'discard_count' => $discard_count,
-                        'top_discard_id' => $top_discard_id,
-                        'top_discard_type' => $top_discard_type,
-                    )
-                );
+                $this->drawCards(5, $current_player_id, $current_player_name);
                 $this->gamestate->nextState('nextPlayer');
                 break;
             case 3: // kangaroo

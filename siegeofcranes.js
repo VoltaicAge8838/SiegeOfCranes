@@ -601,14 +601,11 @@ function (dojo, declare) {
             dojo.subscribe('drawCards', this, "notif_updateHandCount");
             this.notifqueue.setIgnoreNotificationCheck('drawCards', (notif) => notif.args.player_id == this.player_id);
             dojo.subscribe('playerDrawCards', this, "notif_playerDrawCards");
-            dojo.subscribe('discardAndDrawCards', this, "notif_updateHandCount");
-            this.notifqueue.setIgnoreNotificationCheck('discardAndDrawCards', (notif) => notif.args.player_id == this.player_id);
-            dojo.subscribe('playerDiscardAndDrawCards', this, "notif_playerDiscardAndDrawCards");
+            dojo.subscribe('discardCards', this, "notif_discardCards");
             dojo.subscribe('playersRotateHand', this, "notif_playersRotateHand");
             dojo.subscribe('playAction', this, "notif_discardCard");
             dojo.subscribe('playFox', this, "notif_discardCard");
             dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
-            dojo.subscribe('discardKangarooCards', this, "notif_discardCards");
             dojo.subscribe('giveCards', this, "notif_giveCards");
             this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
             dojo.subscribe('playerGiveCards', this, "notif_playerGiveCards");
