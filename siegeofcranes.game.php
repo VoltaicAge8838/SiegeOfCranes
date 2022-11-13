@@ -415,8 +415,6 @@ class SiegeOfCranes extends Table
         $target1_card = $this->cards->getCard($target1_id);
         $target2_card = $this->cards->getCard($target2_id);
 
-        //Invalid cards supplied. collections: 2363182, collections: 2363183
-
         if ($target1_card['location'] != 'collections'
                 || $target2_card['location'] != 'collections'
                 || $target1_card['location_arg'] == $target2_card['location_arg']) {
@@ -458,14 +456,19 @@ class SiegeOfCranes extends Table
     function playFinch($card_id, $giver_id) {
         self::checkAction("playFinch");
         $current_card = $this->cards->getCard($card_id);
+        $players = self::loadPlayersBasicInfos();
 
         if ($current_card['type'] != 5) {
             $type = $current_card['type'];
             throw new BgaUserException(self::_("Expected finch card (type 5) but got type $type instead."));
         }
 
+        if (count($this->cards->getCardsInLocation('hand', $giver_id)) < 3) {
+            $giver_name = $players[$giver_id]['player_name'];
+            throw new BgaUserException(self::_("$giver_name doesn't have enough cards to be targeted by a Finch card."));
+        }
+
         $player_id = self::getActivePlayerId();
-        $players = self::loadPlayersBasicInfos();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
@@ -496,11 +499,18 @@ class SiegeOfCranes extends Table
     function giveCards($target1_id, $target2_id) {
         self::checkAction("giveCards");
 
-        // TODO: check that target cards belong to the giver
-
         $receiver_id = self::getGameStateValue("card_player_id");
         $giver_id = self::getGameStateValue("target_player_id");
         $players = self::loadPlayersBasicInfos();
+
+        // check that target cards belong to the giver
+        $card1 = $this->cards->getCard($target1_id);
+        $card2 = $this->cards->getCard($target2_id);
+        if ($card1['location'] != 'hand' || $card1['location_arg'] != $giver_id ||
+                $card2['location'] != 'hand' || $card2['location_arg'] != $giver_id) {
+            $giver_name = $players[$giver_id]['player_name'];
+            throw new BgaUserException(self::_("$giver_name doesn't have those cards in their hand."));
+        }
 
         $this->cards->moveCard($target1_id, 'hand', $receiver_id);
         $this->cards->moveCard($target2_id, 'hand', $receiver_id);
@@ -700,7 +710,6 @@ class SiegeOfCranes extends Table
         foreach ($card_ids as $key => $id) {
             if (array_key_exists($id, $player_cards)) {
                 array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
-                // array_push($types, $player_cards[$id]['type']);
                 array_push($types, $this->card_types[$player_cards[$id]['type']]['name']);
                 unset($player_cards[$id]);
                 $top_discard_id = $id;
@@ -821,7 +830,7 @@ class SiegeOfCranes extends Table
                 break;
             case 2: // pandas
 
-                // forcing the panda card to be the top card on the discard pile
+                // force the panda card to be the top card on the discard pile
                 $top_discard_id = $card_id;
                 $top_discard_type = $currentCard['type'];
                 self::setGameStateValue("top_discard_id", $top_discard_id);

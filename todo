@@ -7,5 +7,6 @@ card depth for draw/discard piles?
 tie breaker logic
 change layout: my hand on right/top, circle of players on left/bottom
 improve card info text
-check that target cards belong to the giver (finch)
-finch - require target player to have at least 3 cards
+finch - require target player to have at least 3 cards (UI change)
+use type names in user exceptions (e.g. "expected finch card but got ...")
+switch to using countCardInLocation
