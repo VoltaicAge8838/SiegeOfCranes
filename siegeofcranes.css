@@ -83,6 +83,21 @@
     box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
+.cardtitle {
+    position: absolute;
+    left: 20px;
+    right: 0px;
+    text-align: center;
+}
+
+.carddescription {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    text-align: center;
+}
+
 .whiteblock {
     margin-left: 10px;
     margin-right: 10px;

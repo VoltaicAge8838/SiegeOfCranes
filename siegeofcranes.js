@@ -60,12 +60,12 @@ function (dojo, declare) {
             this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardWidth, this.cardHeight);
             this.playerHand.setSelectionMode(0);
             this.playerHand.extraClasses='card';
+            this.playerHand.onItemCreate = dojo.hitch(this, 'setupHandCard');
 
             // Cards in player's hand
             for (var i in this.gamedatas.hand) {
                 var card = this.gamedatas.hand[i];
                 this.playerHand.addToStockWithId(card.type, card.id);
-                this.addTooltip('myhand_item_' + card.id, this.gamedatas.cardTypes[card.type]['description'], '');
             }
 
             // Setting up all players' collections
@@ -264,6 +264,26 @@ function (dojo, declare) {
             return stock;
         },
 
+        setupHandCard: function(card_div, card_type_id, card_id) {
+            // this.addTooltip(card_div.id, this.gamedatas.cardTypes[card_type_id]['description'], '');
+
+            // Add some custom HTML content INSIDE the Stock item:
+            dojo.place(
+                this.format_block('jstpl_cardinhandtitle', {
+                    card_id: card_id,
+                    card_title: this.gamedatas.cardTypes[card_type_id]['name']
+                }),
+                card_div.id
+            );
+            dojo.place(
+                this.format_block('jstpl_cardinhanddescription', {
+                    card_id: card_id,
+                    card_description: this.gamedatas.cardTypes[card_type_id]['description']
+                }),
+                card_div.id
+            );
+        },
+
         moveCardAnimation: function(source, destination, cardType, cardId) {
             return this.slideTemporaryObject(
                 this.format_block(
@@ -330,7 +350,6 @@ function (dojo, declare) {
             for (var cardIndex in cards) {
                 var card = cards[cardIndex];
                 this.playerHand.addToStockWithId(card.type, card.id);
-                this.addTooltip('myhand_item_' + card.id, this.gamedatas.cardTypes[card.type]['description'], '');
             }
         },
 

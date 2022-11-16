@@ -10,3 +10,4 @@ improve card info text
 finch - require target player to have at least 3 cards (UI change)
 use type names in user exceptions (e.g. "expected finch card but got ...")
 switch to using countCardInLocation
+prevent users from cheating by hacking http requests (validate all input!)
