@@ -47,9 +47,7 @@
 
 <script type="text/javascript">
 
-var jstpl_cardinhandtitle = '<span id="cardinhandtitle_${card_id}" class="cardtitle">${card_title}</span>';
-
-var jstpl_cardinhanddescription = '<span id="cardinhanddescription_${card_id}" class="carddescription">${card_description}</span>';
+var jstpl_bigcard = '<div id="cardinhandtitle_${card_id}" style="width: 100px; height: 143px;"><div class="cardtitle">${card_title}</div><hr/><div id="bigcard_${card_id}" class="carddescription">${card_description}</div></div>';
 
 var jstpl_cardontable = '<div class="card cardontable" id="cardontable_${card_id}" style="background-position:-${x}px -${y}px"></div>';
 

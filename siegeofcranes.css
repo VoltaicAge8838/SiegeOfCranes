@@ -70,32 +70,32 @@
     border-radius: 8px;
     width: 100px;
     height: 143px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .cardontable {
     position: absolute;
     background-image: url('img/cards.jpg');
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .cardback {
     background-image: url('img/card_back.jpg');
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .cardtitle {
-    position: absolute;
-    left: 20px;
-    right: 0px;
+    /* position: absolute; */
+    /* left: 20px; */
+    /* right: 0px; */
     text-align: center;
 }
 
 .carddescription {
-    position: absolute;
+    /* position: absolute;
     left: 0px;
     right: 0px;
-    bottom: 0px;
+    bottom: 0px; */
     text-align: center;
+    font-size: 85%;
 }
 
 .whiteblock {

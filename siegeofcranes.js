@@ -101,7 +101,7 @@ function (dojo, declare) {
 
             if (this.gamedatas.topdiscardcard) {
                 var type = this.gamedatas.topdiscardcard.type;
-                dojo.addClass('discard', 'cardontable');
+                dojo.addClass('discard', 'cardontable', 'card');
                 dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
             }
 
@@ -265,23 +265,11 @@ function (dojo, declare) {
         },
 
         setupHandCard: function(card_div, card_type_id, card_id) {
-            // this.addTooltip(card_div.id, this.gamedatas.cardTypes[card_type_id]['description'], '');
-
-            // Add some custom HTML content INSIDE the Stock item:
-            dojo.place(
-                this.format_block('jstpl_cardinhandtitle', {
-                    card_id: card_id,
-                    card_title: this.gamedatas.cardTypes[card_type_id]['name']
-                }),
-                card_div.id
-            );
-            dojo.place(
-                this.format_block('jstpl_cardinhanddescription', {
-                    card_id: card_id,
-                    card_description: this.gamedatas.cardTypes[card_type_id]['description']
-                }),
-                card_div.id
-            );
+            this.addTooltipHtml(card_div.id, this.format_block('jstpl_bigcard', {
+                card_id: card_id,
+                card_title: this.gamedatas.cardTypes[card_type_id]['name'],
+                card_description: this.gamedatas.cardTypes[card_type_id]['description']
+            }));
         },
 
         moveCardAnimation: function(source, destination, cardType, cardId) {
@@ -372,7 +360,7 @@ function (dojo, declare) {
         },
 
         updateTopDiscardCard: function(cardType) {
-            dojo.addClass('discard', 'cardontable');
+            dojo.addClass('discard', 'cardontable', 'card');
             dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
         },
 
@@ -776,7 +764,7 @@ function (dojo, declare) {
             this.deckCount.setValue(this.discardCount.getValue());
             this.discardCount.setValue(0);
 
-            dojo.removeClass('discard', 'cardontable');
+            dojo.removeClass('discard', 'cardontable', 'card');
             dojo.style('discard', 'background-position', '');
             this.slideTemporaryObject(
                 this.format_block('jstpl_cardback', {id: 1}),
