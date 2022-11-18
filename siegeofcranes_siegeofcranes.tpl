@@ -26,7 +26,7 @@
 
         <div id="discard_wrap" class="card_wrap">
             <h3>{DISCARD}: <span id="discardcount"></h3>
-            <div id="discard" class="card">
+            <div id="discard" class="">
             </div>
         </div>
         <div class="expand"></div>

@@ -101,7 +101,8 @@ function (dojo, declare) {
 
             if (this.gamedatas.topdiscardcard) {
                 var type = this.gamedatas.topdiscardcard.type;
-                dojo.addClass('discard', 'cardontable', 'card');
+                dojo.addClass('discard', 'cardontable');
+                dojo.addClass('discard', 'card');
                 dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
             }
 
@@ -270,6 +271,11 @@ function (dojo, declare) {
                 card_title: this.gamedatas.cardTypes[card_type_id]['name'],
                 card_description: this.gamedatas.cardTypes[card_type_id]['description']
             }));
+            card_div.onclick = () => {
+                console.log("tooltip click", this.tooltips[card_id]);
+                // this.tooltips[card_id].open(card_id);
+                this.tooltips[card_id].close(card_id);
+            };
         },
 
         moveCardAnimation: function(source, destination, cardType, cardId) {
@@ -360,7 +366,8 @@ function (dojo, declare) {
         },
 
         updateTopDiscardCard: function(cardType) {
-            dojo.addClass('discard', 'cardontable', 'card');
+            dojo.addClass('discard', 'cardontable');
+            dojo.addClass('discard', 'card');
             dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
         },
 
