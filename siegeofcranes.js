@@ -474,8 +474,13 @@ function (dojo, declare) {
                     this.updatePageTitle();
                     this.removeActionButtons();
                     for (var playerId in this.gamedatas.players) {
+                        //
                         if (playerId != this.player_id) {
-                            this.addActionButton('playFinch_' + playerId + '_button', _(this.gamedatas.players[playerId].name), this.playFinch.bind(this, cardId, playerId));
+                            var buttonId = 'playFinch_' + playerId + '_button';
+                            this.addActionButton(buttonId , _(this.gamedatas.players[playerId].name), this.playFinch.bind(this, cardId, playerId));
+                            if (this.playersHandCount[playerId].getValue() < 3){
+                                dojo.addClass(buttonId, 'disabled');
+                            }
                         }
                     }
                     this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
