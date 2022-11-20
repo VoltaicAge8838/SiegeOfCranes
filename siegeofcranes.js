@@ -138,13 +138,12 @@ function (dojo, declare) {
                     break;
 
                 case 'selectCardToCollect':
-                case 'waitForUndoFoxes':
-                case 'waitForRedoFoxes':
-                case 'waitForCranes':
                     this.playerHand.setSelectionMode(1);
                     break;
 
-                case 'dummmy':
+                case 'waitForUndoFoxes':
+                case 'waitForRedoFoxes':
+                case 'waitForCranes':
                     this.playerHand.setSelectionMode(0);
                     break;
             }
@@ -562,14 +561,14 @@ function (dojo, declare) {
         },
 
         playFox: function() {
-            var items = this.playerHand.getSelectedItems();
-            if (items.length !== 1) {
-                this.showMessage('Incorrect number of cards selected', 'error');
+            var foxCard = this.playerHand.getAllItems().find(card => card.type == 4);
+            if (!foxCard) {
+                this.showMessage('No Fox card to play', 'error');
                 return;
             }
 
             this.ajaxAction('playFox', {
-                id: items[0].id,
+                id: foxCard.id,
                 lock: true
             });
         },
@@ -581,14 +580,14 @@ function (dojo, declare) {
         },
 
         playCrane: function() {
-            var items = this.playerHand.getSelectedItems();
-            if (items.length !== 1) {
-                this.showMessage('Incorrect number of cards selected', 'error');
+            var craneCard = this.playerHand.getAllItems().find(card => card.type == 8);
+            if (!craneCard) {
+                this.showMessage('No Fox card to play', 'error');
                 return;
             }
 
             this.ajaxAction('playCrane', {
-                id: items[0].id,
+                id: craneCard.id,
                 lock: true
             });
         },

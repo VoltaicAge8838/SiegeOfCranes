@@ -1,12 +1,13 @@
-more than one card moving for "draw card" animation
-auto-select fox or crane
+prevent users from cheating by hacking http requests (validate all input!)
+tie breaker logic
+improve card info text
+use type names in user exceptions (e.g. "expected finch card but got ...")
+
 ~3 second timer to auto-pass for crane & fox play
 highlight collections for rat selection
 disable selecting hand cards for rat selection
-card depth for draw/discard piles?
-tie breaker logic
-change layout: my hand on right/top, circle of players on left/bottom
-improve card info text
-use type names in user exceptions (e.g. "expected finch card but got ...")
+
 switch to using countCardInLocation
-prevent users from cheating by hacking http requests (validate all input!)
+change layout: my hand on right/top, circle of players on left/bottom
+card depth for draw/discard piles?
+more than one card moving for "draw card" animation
