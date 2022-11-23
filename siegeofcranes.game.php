@@ -784,6 +784,10 @@ class SiegeOfCranes extends Table
     function stNextPlayer() {
         $player_id = self::activeNextPlayer();
         self::giveExtraTime($player_id);
+
+        self::DbQuery("UPDATE player SET player_score_aux = player_score_aux + 1");
+        self::DbQuery("UPDATE player SET player_score_aux=0 WHERE player_id='$player_id'");
+
         $this->gamestate->nextState('playerTurn');
     }
 

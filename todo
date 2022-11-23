@@ -1,7 +1,8 @@
 prevent users from cheating by hacking http requests (validate all input!)
-tie breaker logic
 improve card info text
 use type names in user exceptions (e.g. "expected finch card but got ...")
+allow taking cards from zombies
+add game to BGG
 
 ~3 second timer to auto-pass for crane & fox play
 highlight collections for rat selection
