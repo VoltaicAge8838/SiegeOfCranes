@@ -4,7 +4,7 @@ use type names in user exceptions (e.g. "expected finch card but got ...")
 allow taking cards from zombies
 add game to BGG
 
-~3 second timer to auto-pass for crane & fox play
+improve auto-pass timer
 highlight collections for rat selection
 disable selecting hand cards for rat selection
 

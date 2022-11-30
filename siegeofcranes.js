@@ -23,6 +23,7 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
+    const passButtonText = _('Pass');
     return declare("bgagame.siegeofcranes", ebg.core.gamegui, {
         constructor: function(){
             console.log('siegeofcranes constructor');
@@ -32,11 +33,6 @@ function (dojo, declare) {
             this.iconHeight = 64;
             this.backupDescriptionMyTurn = '';
             this.isCoyoteState = true;
-
-            // Here, you can init the global variables of your user interface
-            // Example:
-            // this.myGlobalValue = 0;
-
         },
 
         /*
@@ -105,6 +101,10 @@ function (dojo, declare) {
                 dojo.addClass('discard', 'card');
                 dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
             }
+
+            // setup button timers
+            var intervalId;
+            var countDown;
 
             dojo.connect(this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged');
 
@@ -198,15 +198,47 @@ function (dojo, declare) {
                     case 'waitForUndoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
+                            this.addActionButton('passFox_button', passButtonText, 'passFox');
+                        } else {
+                            clearInterval(this.intervalId);
+                            this.countDown = 3;
+                            this.addActionButton('passFox_button', `${passButtonText} (${this.countDown})`, 'passFox');
+                            this.intervalId = setInterval(() => {
+                                this.countDown -= 1;
+                                if (!$('passFox_button')) {
+                                    clearInterval(this.intervalId);
+                                    return;
+                                }
+                                $('passFox_button').textContent = `${passButtonText} (${this.countDown})`;
+                                if (this.countDown <= 0) {
+                                    clearInterval(this.intervalId);
+                                    this.passFox();
+                                }
+                            }, 1000);
                         }
-                        this.addActionButton('passFox_button', _('Pass'), 'passFox');
                         break;
 
                     case 'waitForRedoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
+                            this.addActionButton('passFox_button', passButtonText, 'passFox');
+                        } else {
+                            clearInterval(this.intervalId);
+                            this.countDown = 3;
+                            this.addActionButton('passFox_button', `${passButtonText} (${this.countDown})`, 'passFox');
+                            this.intervalId = setInterval(() => {
+                                this.countDown -= 1;
+                                if (!$('passFox_button')) {
+                                    clearInterval(this.intervalId);
+                                    return;
+                                }
+                                $('passFox_button').textContent = `${passButtonText} (${this.countDown})`;
+                                if (this.countDown <= 0) {
+                                    clearInterval(this.intervalId);
+                                    this.passFox();
+                                }
+                            }, 1000);
                         }
-                        this.addActionButton('passFox_button', _('Pass'), 'passFox');
                         break;
 
                     case 'selectMultipleCardsToCollect':
@@ -226,8 +258,23 @@ function (dojo, declare) {
                     case 'waitForCranes':
                         if (this.playerHand.getAllItems().find(card => card.type == 8)) {
                             this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
+                            this.addActionButton('passCrane_button', passButtonText, 'passCrane');
+                        } else {
+                            clearInterval(this.intervalId);
+                            this.countDown = 3;
+                            this.addActionButton('passCrane_button', `${passButtonText} (${this.countDown})`, 'passCrane');
+                            this.intervalId = setInterval(() => {
+                                this.countDown -= 1;
+                                if (!$('passCrane_button')) {
+                                    clearInterval(this.intervalId);
+                                    return;
+                                }
+                                $('passCrane_button').textContent = `${passButtonText} (${this.countDown})`;
+                                if (this.countDown <= 0) {
+                                    this.passCrane();
+                                }
+                            }, 1000);
                         }
-                        this.addActionButton('passCrane_button', _('Pass'), 'passCrane');
                         break;
                 }
             }
@@ -574,6 +621,7 @@ function (dojo, declare) {
         },
 
         passFox: function() {
+            clearInterval(this.intervalId);
             this.ajaxAction('passFox', {
                 lock: true
             });
@@ -593,6 +641,7 @@ function (dojo, declare) {
         },
 
         passCrane: function() {
+            clearInterval(this.intervalId);
             this.ajaxAction('passCrane', {
                 lock: true
             });
