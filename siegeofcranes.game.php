@@ -327,12 +327,16 @@ class SiegeOfCranes extends Table
     function playAction($card_id) {
         self::checkAction("playAction");
         $current_card = $this->cards->getCard($card_id);
+        $player_id = self::getActivePlayerId();
+
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
 
         if ($this->card_types[$current_card['type']]['react'] == 1) {
             throw new BgaUserException(self::_("Reaction cards may not be played now."));
         }
 
-        $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
@@ -365,6 +369,11 @@ class SiegeOfCranes extends Table
     function playFerret($card_id, $direction) {
         self::checkAction("playFerret");
         $current_card = $this->cards->getCard($card_id);
+        $player_id = self::getActivePlayerId();
+
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
 
         if ($current_card['type'] != 6) {
             $type = $current_card['type'];
@@ -376,7 +385,6 @@ class SiegeOfCranes extends Table
         }
 
         $direction_name = $this->direction_names[$direction];
-        $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
@@ -406,6 +414,11 @@ class SiegeOfCranes extends Table
     function playRat($card_id, $target1_id, $target2_id) {
         self::checkAction("playRat");
         $current_card = $this->cards->getCard($card_id);
+        $player_id = self::getActivePlayerId();
+
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
 
         if ($current_card['type'] != 1) {
             $type = $current_card['type'];
@@ -421,7 +434,6 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("Invalid cards supplied."));
         }
 
-        $player_id = self::getActivePlayerId();
         $players = self::loadPlayersBasicInfos();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
@@ -457,6 +469,11 @@ class SiegeOfCranes extends Table
         self::checkAction("playFinch");
         $current_card = $this->cards->getCard($card_id);
         $players = self::loadPlayersBasicInfos();
+        $player_id = self::getActivePlayerId();
+
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
 
         if ($current_card['type'] != 5) {
             $type = $current_card['type'];
@@ -468,7 +485,6 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("$giver_name doesn't have enough cards to be targeted by a Finch card."));
         }
 
-        $player_id = self::getActivePlayerId();
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
@@ -572,6 +588,10 @@ class SiegeOfCranes extends Table
         $player_id = self::getCurrentPlayerId();
         $current_card = $this->cards->getCard($card_id);
 
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
+
         // 4 == fox card
         if ($current_card['type'] != 4) {
             throw new BgaUserException(self::_("Only a Fox card may be played now."));
@@ -618,6 +638,10 @@ class SiegeOfCranes extends Table
         $player_id = self::getCurrentPlayerId();
         $current_card = $this->cards->getCard($card_id);
 
+        if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
+            throw new BgaUserException(self::_("Invalid card selected."));
+        }
+
         // 8 == crane card
         if ($current_card['type'] != 8) {
             throw new BgaUserException(self::_("Only a Crane card may be played now."));
@@ -661,7 +685,13 @@ class SiegeOfCranes extends Table
 
         $cardType = $this->cards->getCard($card_ids[array_key_first($card_ids)])['type'];
         foreach ($card_ids as $id) {
-            if ($cardType != $this->cards->getCard($id)['type']) {
+            $card = $this->cards->getCard($id);
+
+            if ($card['location'] != 'hand' || $card['location_arg'] != $player_id) {
+                throw new BgaUserException(self::_("Invalid card selected."));
+            }
+
+            if ($cardType != $card['type']) {
                 throw new BgaUserException(self::_("Collected cards must all be of the same type."));
             }
         }

@@ -1,8 +1,8 @@
-prevent users from cheating by hacking http requests (validate all input!)
 improve card info text
 use type names in user exceptions (e.g. "expected finch card but got ...")
 allow taking cards from zombies
 add game to BGG
+fix all internationalization stuffs (remove duplicates, make sure everything is set up to have a translation)
 
 improve auto-pass timer
 highlight collections for rat selection
