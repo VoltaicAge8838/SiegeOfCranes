@@ -63,6 +63,10 @@ class view_siegeofcranes_siegeofcranes extends game_view
 
         foreach ($reorderd_ids as $key => $player_id) {
             $player_name = $players[$player_id]['player_name'];
+            if ($player_id == $current_player_id) {
+                $player_name = self::_("You");
+            }
+
             $player_color = $players[$player_id]['player_color'];
             $this->tpl[$positions[$key]] = self::_(
                 "<div class=\"playertable whiteblock playertable_$player_id\">

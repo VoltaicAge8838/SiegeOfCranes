@@ -56,10 +56,12 @@
 
 .center {
     display: flex;
+    flex-wrap: wrap;
 }
 
 .expand {
     flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .card_wrap {

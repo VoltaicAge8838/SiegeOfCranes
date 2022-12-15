@@ -10,38 +10,33 @@
 -------
 -->
 
-<div id="table">
-    <div></div>
-    <div>{TOP_PLAYER}</div>
-    <div></div>
-
-    <div>{LEFT_PLAYER}</div>
-    <div class="center">
-        <div class="expand"></div>
-        <div id="deck_wrap" class="card_wrap">
-            <h3>{DECK}: <span id="deckcount"></h3>
-            <div id="deck" class="card cardback">
-            </div>
-        </div>
-
-        <div id="discard_wrap" class="card_wrap">
-            <h3>{DISCARD}: <span id="discardcount"></h3>
-            <div id="discard" class="">
-            </div>
-        </div>
-        <div class="expand"></div>
-    </div>
-    <div>{RIGHT_PLAYER}</div>
-
-    <div></div>
-    <div>{THIS_PLAYER}</div>
-    <div></div>
-</div>
-
 <div id="myhand_wrap" class="whiteblock">
     <h3>{YOUR_HAND}</h3>
     <div id="myhand">
     </div>
+</div>
+
+<div id="collections" class="center">
+    <div class="expand">{LEFT_PLAYER}</div>
+    <div class="expand">{THIS_PLAYER}</div>
+    <div class="expand">{RIGHT_PLAYER}</div>
+    <div class="expand">{TOP_PLAYER}</div>
+</div>
+
+<div class="center">
+    <div class="expand"></div>
+    <div id="deck_wrap" class="card_wrap">
+        <h3>{DECK}: <span id="deckcount"></h3>
+        <div id="deck" class="card cardback">
+        </div>
+    </div>
+
+    <div id="discard_wrap" class="card_wrap">
+        <h3>{DISCARD}: <span id="discardcount"></h3>
+        <div id="discard" class="">
+        </div>
+    </div>
+    <div class="expand"></div>
 </div>
 
 
