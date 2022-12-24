@@ -17,10 +17,10 @@
 </div>
 
 <div id="collections" class="center">
-    <div class="expand">{LEFT_PLAYER}</div>
-    <div class="expand">{THIS_PLAYER}</div>
-    <div class="expand">{RIGHT_PLAYER}</div>
-    <div class="expand">{TOP_PLAYER}</div>
+    {LEFT_PLAYER}
+    {THIS_PLAYER}
+    {RIGHT_PLAYER}
+    {TOP_PLAYER}
 </div>
 
 <div class="center">
@@ -44,7 +44,7 @@
 
 var jstpl_bigcard = '<div id="cardinhandtitle_${card_id}" style="width: 100px; height: 143px;"><div class="cardtitle">${card_title}</div><hr/><div id="bigcard_${card_id}" class="carddescription">${card_description}</div></div>';
 
-var jstpl_cardontable = '<div class="card cardontable" id="cardontable_${card_id}" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_cardontable = '<div class="card cardontable" id="cardontable_${card_id}" style="background-position:-${x}px -${y}px"><span class="cardtitle">${title}</span><span class="carddescription">${attack}${react}${description}</span></div>';
 
 var jstpl_cardback = '<div class="card cardback" id="cardback_${id}"></div>';
 

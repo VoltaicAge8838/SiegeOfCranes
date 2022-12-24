@@ -61,43 +61,53 @@
 
 .expand {
     flex-grow: 1;
-    flex-shrink: 1;
 }
 
 .card_wrap {
-    width: 30%;
+    width: 200px;
+    height: auto;
+    padding: 0.5rem;
+}
+
+.cardsize {
+    width: 160px;
+    height: 250px;
 }
 
 .card {
     border-radius: 8px;
-    width: 100px;
-    height: 143px;
+    width: 160px;
+    height: 250px;
     box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .cardontable {
     position: absolute;
-    background-image: url('img/cards.jpg');
+    background-image: url('img/cards_blank.jpg');
 }
 
 .cardback {
-    background-image: url('img/card_back.jpg');
+    background-image: url('img/card_back_160.jpg');
 }
 
 .cardtitle {
-    /* position: absolute; */
-    /* left: 20px; */
-    /* right: 0px; */
+    position: absolute;
+    left: 2.5rem;
+    right: 0.25rem;
+    top: 0.25rem;
     text-align: center;
+    background-color: #fff;
 }
 
 .carddescription {
-    /* position: absolute;
-    left: 0px;
-    right: 0px;
-    bottom: 0px; */
+    position: absolute;
+    left: 0.25rem;
+    right: 0.25rem;
+    bottom: 0.25rem;
+    min-height: 2.5rem;
     text-align: center;
-    font-size: 85%;
+    font-size: 75%;
+    background-color: #fff;
 }
 
 .whiteblock {

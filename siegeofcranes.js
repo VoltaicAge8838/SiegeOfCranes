@@ -23,16 +23,19 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
-    const passButtonText = _('Pass');
     return declare("bgagame.siegeofcranes", ebg.core.gamegui, {
         constructor: function(){
             console.log('siegeofcranes constructor');
-            this.cardWidth = 100;
-            this.cardHeight = 143;
+            this.cardWidth = 160;
+            this.cardHeight = 250;
             this.iconWidth = 64;
             this.iconHeight = 64;
             this.backupDescriptionMyTurn = '';
             this.isCoyoteState = true;
+
+            this.passButtonText = _('Pass');
+            this.attackCardText = _('Attack Card');
+            this.reactCardText = _('Reaction');
         },
 
         /*
@@ -53,7 +56,7 @@ function (dojo, declare) {
             console.log( "Starting game setup" );
 
             // set up player hand
-            this.playerHand = this.setupStock('myhand', 'cards.jpg', this.cardWidth, this.cardHeight);
+            this.playerHand = this.setupStock('myhand', 'cards_blank.jpg', this.cardWidth, this.cardHeight);
             this.playerHand.setSelectionMode(0);
             this.playerHand.extraClasses='card';
             this.playerHand.onItemCreate = dojo.hitch(this, 'setupHandCard');
@@ -100,6 +103,7 @@ function (dojo, declare) {
                 dojo.addClass('discard', 'cardontable');
                 dojo.addClass('discard', 'card');
                 dojo.style('discard', 'background-position', `-${this.cardTypeX(type)}px -${this.cardTypeY(type)}px`);
+                $('discard').innerHTML = this.cardHtmlBlock(type, 'inner_discard');
             }
 
             // setup button timers
@@ -198,18 +202,18 @@ function (dojo, declare) {
                     case 'waitForUndoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
-                            this.addActionButton('passFox_button', passButtonText, 'passFox');
+                            this.addActionButton('passFox_button', this.passButtonText, 'passFox');
                         } else {
                             clearInterval(this.intervalId);
                             this.countDown = 3;
-                            this.addActionButton('passFox_button', `${passButtonText} (${this.countDown})`, 'passFox');
+                            this.addActionButton('passFox_button', `${this.passButtonText} (${this.countDown})`, 'passFox');
                             this.intervalId = setInterval(() => {
                                 this.countDown -= 1;
                                 if (!$('passFox_button')) {
                                     clearInterval(this.intervalId);
                                     return;
                                 }
-                                $('passFox_button').textContent = `${passButtonText} (${this.countDown})`;
+                                $('passFox_button').textContent = `${this.passButtonText} (${this.countDown})`;
                                 if (this.countDown <= 0) {
                                     clearInterval(this.intervalId);
                                     this.passFox();
@@ -221,18 +225,18 @@ function (dojo, declare) {
                     case 'waitForRedoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
-                            this.addActionButton('passFox_button', passButtonText, 'passFox');
+                            this.addActionButton('passFox_button', this.passButtonText, 'passFox');
                         } else {
                             clearInterval(this.intervalId);
                             this.countDown = 3;
-                            this.addActionButton('passFox_button', `${passButtonText} (${this.countDown})`, 'passFox');
+                            this.addActionButton('passFox_button', `${this.passButtonText} (${this.countDown})`, 'passFox');
                             this.intervalId = setInterval(() => {
                                 this.countDown -= 1;
                                 if (!$('passFox_button')) {
                                     clearInterval(this.intervalId);
                                     return;
                                 }
-                                $('passFox_button').textContent = `${passButtonText} (${this.countDown})`;
+                                $('passFox_button').textContent = `${this.passButtonText} (${this.countDown})`;
                                 if (this.countDown <= 0) {
                                     clearInterval(this.intervalId);
                                     this.passFox();
@@ -258,18 +262,18 @@ function (dojo, declare) {
                     case 'waitForCranes':
                         if (this.playerHand.getAllItems().find(card => card.type == 8)) {
                             this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
-                            this.addActionButton('passCrane_button', passButtonText, 'passCrane');
+                            this.addActionButton('passCrane_button', this.passButtonText, 'passCrane');
                         } else {
                             clearInterval(this.intervalId);
                             this.countDown = 3;
-                            this.addActionButton('passCrane_button', `${passButtonText} (${this.countDown})`, 'passCrane');
+                            this.addActionButton('passCrane_button', `${this.passButtonText} (${this.countDown})`, 'passCrane');
                             this.intervalId = setInterval(() => {
                                 this.countDown -= 1;
                                 if (!$('passCrane_button')) {
                                     clearInterval(this.intervalId);
                                     return;
                                 }
-                                $('passCrane_button').textContent = `${passButtonText} (${this.countDown})`;
+                                $('passCrane_button').textContent = `${this.passButtonText} (${this.countDown})`;
                                 if (this.countDown <= 0) {
                                     this.passCrane();
                                 }
@@ -304,6 +308,8 @@ function (dojo, declare) {
 
             stock.image_items_per_row = 5;
 
+            console.log(`stock ${imageName}`, stock);
+
             for (var type = 1; type <= 10; type++) {
                 stock.addItemType(type, type, g_gamethemeurl + 'img/' + imageName, type - 1);
             }
@@ -311,29 +317,37 @@ function (dojo, declare) {
             return stock;
         },
 
-        setupHandCard: function(card_div, card_type_id, card_id) {
-            this.addTooltipHtml(card_div.id, this.format_block('jstpl_bigcard', {
-                card_id: card_id,
-                card_title: this.gamedatas.cardTypes[card_type_id]['name'],
-                card_description: this.gamedatas.cardTypes[card_type_id]['description']
-            }));
-            card_div.onclick = () => {
-                console.log("tooltip click", this.tooltips[card_id]);
-                // this.tooltips[card_id].open(card_id);
-                this.tooltips[card_id].close(card_id);
-            };
+        setupHandCard: function(cardDiv, cardTypeId, cardId) {
+            var title = this.gamedatas.cardTypes[cardTypeId]['name'];
+            var attack = this.gamedatas.cardTypes[cardTypeId]['attack'] ? `<strong>${this.attackCardText}</strong><br>` : '';
+            var react = this.gamedatas.cardTypes[cardTypeId]['react'] ? `<strong>${this.reactCardText}:</strong> ` : '';
+            var description = this.gamedatas.cardTypes[cardTypeId]['description'];
+            cardDiv.innerHTML = `<span class="cardtitle">${title}</span><span class="carddescription">${attack}${react}${description}</span>`;
+        },
+
+        cardHtmlBlock: function(cardType, cardId) {
+            var title = this.gamedatas.cardTypes[cardType]['name'];
+            var attack = this.gamedatas.cardTypes[cardType]['attack'] ? `<strong>${this.attackCardText}</strong><br>` : '';
+            var react = this.gamedatas.cardTypes[cardType]['react'] ? `<strong>${this.reactCardText}:</strong> ` : '';
+            var description = this.gamedatas.cardTypes[cardType]['description'];
+
+            return this.format_block(
+                'jstpl_cardontable',
+                {
+                    x: this.cardTypeX(cardType),
+                    y: this.cardTypeY(cardType),
+                    card_id: cardId + 't',
+                    title,
+                    attack,
+                    react,
+                    description
+                }
+            );
         },
 
         moveCardAnimation: function(source, destination, cardType, cardId) {
             return this.slideTemporaryObject(
-                this.format_block(
-                    'jstpl_cardontable',
-                    {
-                        x: this.cardTypeX(cardType),
-                        y: this.cardTypeY(cardType),
-                        card_id: cardId + 't'
-                    }
-                ),
+                this.cardHtmlBlock(cardType, cardId),
                 destination,
                 source,
                 destination
@@ -415,6 +429,7 @@ function (dojo, declare) {
             dojo.addClass('discard', 'cardontable');
             dojo.addClass('discard', 'card');
             dojo.style('discard', 'background-position', `-${this.cardTypeX(cardType)}px -${this.cardTypeY(cardType)}px`);
+            $('discard').innerHTML = this.cardHtmlBlock(cardType, 'inner_discard');
         },
 
 
@@ -697,14 +712,7 @@ function (dojo, declare) {
 
             this.playersCollection[t1PlayerId].removeFromStockById(t1cardId);
             this.slideTemporaryObject(
-                this.format_block(
-                    'jstpl_cardontable',
-                    {
-                        x: this.cardWidth * ((t1cardType - 1) % 5),
-                        y: this.cardHeight * Math.floor((t1cardType - 1) / 5),
-                        card_id: t1cardId
-                    }
-                ),
+                this.cardHtmlBlock(t1cardType, t1cardId),
                 'playercollection_' + t2PlayerId,
                 'playercollection_' + t1PlayerId,
                 'playercollection_' + t2PlayerId
@@ -713,14 +721,7 @@ function (dojo, declare) {
 
             this.playersCollection[t2PlayerId].removeFromStockById(t2cardId);
             this.slideTemporaryObject(
-                this.format_block(
-                    'jstpl_cardontable',
-                    {
-                        x: this.cardWidth * ((t2cardType - 1) % 5),
-                        y: this.cardHeight * Math.floor((t2cardType - 1) / 5),
-                        card_id: t2cardId
-                    }
-                ),
+                this.cardHtmlBlock(t2cardType, t2cardId),
                 'playercollection_' + t1PlayerId,
                 'playercollection_' + t2PlayerId,
                 'playercollection_' + t1PlayerId
@@ -826,6 +827,7 @@ function (dojo, declare) {
 
             dojo.removeClass('discard', 'cardontable', 'card');
             dojo.style('discard', 'background-position', '');
+            $('discard').innerHTML = '';
             this.slideTemporaryObject(
                 this.format_block('jstpl_cardback', {id: 1}),
                 'deck',

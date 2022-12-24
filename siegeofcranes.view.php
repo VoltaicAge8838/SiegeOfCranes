@@ -54,11 +54,11 @@ class view_siegeofcranes_siegeofcranes extends game_view
         $positions = array("THIS_PLAYER", "LEFT_PLAYER", "TOP_PLAYER", "RIGHT_PLAYER");
         if ($players_nbr == 3) {
             $positions = array("THIS_PLAYER", "TOP_PLAYER", "RIGHT_PLAYER");
-            $this->tpl["LEFT_PLAYER"] = self::_("");
+            $this->tpl["LEFT_PLAYER"] = self::raw("");
         } else if ($players_nbr == 2) {
             $positions = array("THIS_PLAYER", "TOP_PLAYER");
-            $this->tpl["LEFT_PLAYER"] = self::_("");
-            $this->tpl["RIGHT_PLAYER"] = self::_("");
+            $this->tpl["LEFT_PLAYER"] = self::raw("");
+            $this->tpl["RIGHT_PLAYER"] = self::raw("");
         }
 
         foreach ($reorderd_ids as $key => $player_id) {
@@ -68,8 +68,8 @@ class view_siegeofcranes_siegeofcranes extends game_view
             }
 
             $player_color = $players[$player_id]['player_color'];
-            $this->tpl[$positions[$key]] = self::_(
-                "<div class=\"playertable whiteblock playertable_$player_id\">
+            $this->tpl[$positions[$key]] = self::raw(
+                "<div class=\"playertable whiteblock expand playertable_$player_id\">
                     <div class=\"playertablename\" style=\"color:#$player_color\">$player_name</div>
                     <div>Number of cards in hand: <span id=\"handcount_$player_id\"></span></div>
                     <div class=\"playercollection\" id=\"playercollection_$player_id\"></div>
