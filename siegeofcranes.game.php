@@ -1082,7 +1082,7 @@ class SiegeOfCranes extends Table
                         $types_string = implode(', ', $types);
 
                         self::notifyAllPlayers(
-                            'discardKangarooCards',
+                            'discardCards',
                             clienttranslate('${player_name} discards ${types_string}'),
                             array (
                                 'cards' => $discard_cards,
