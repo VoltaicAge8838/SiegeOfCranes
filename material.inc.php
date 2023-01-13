@@ -19,6 +19,9 @@
  *
  */
 
+$this->invalid_card_selection_message = self::_("Invalid card(s) selected");
+$this->invalid_card_type_message = self::_("Invalid card type played");
+
 $this->direction_names = array(
     0 => clienttranslate('left'),
     1 => clienttranslate('right'),
