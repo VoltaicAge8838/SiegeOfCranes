@@ -329,14 +329,17 @@ class SiegeOfCranes extends Table
         $current_card = $this->cards->getCard($card_id);
         $player_id = self::getActivePlayerId();
 
+        // make sure the card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure the played card isn't a reaction card
         if ($this->card_types[$current_card['type']]['react'] == 1) {
             throw new BgaUserException(self::_("Reaction cards may not be played now"));
         }
 
+        // make sure the played card isn't a rat, finch, or ferret. Those require more parameters.
         if (in_array(current_card['type'], array(1, 5, 6))) { // 1 = rat, 5 = finch, 6 = ferret
             $type = $current_card['type'];
             throw new BgaUserException(self::_("Extra information is needed to play that card"));
@@ -376,15 +379,18 @@ class SiegeOfCranes extends Table
         $current_card = $this->cards->getCard($card_id);
         $player_id = self::getActivePlayerId();
 
+        // make sure the card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure the card is a ferret
         if ($current_card['type'] != 6) {
             $type = $current_card['type'];
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure we have a valid direction
         if ($direction != 0 && $direction != 1) {
             throw new BgaUserException(self::_("Invalid direction selected"));
         }
@@ -421,10 +427,12 @@ class SiegeOfCranes extends Table
         $current_card = $this->cards->getCard($card_id);
         $player_id = self::getActivePlayerId();
 
+        // make sure the played card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure the played card is a rat
         if ($current_card['type'] != 1) {
             $type = $current_card['type'];
             throw new BgaUserException($this->invalid_card_selection_message);
@@ -433,6 +441,7 @@ class SiegeOfCranes extends Table
         $target1_card = $this->cards->getCard($target1_id);
         $target2_card = $this->cards->getCard($target2_id);
 
+        // make sure the target cards are in different players' collections
         if ($target1_card['location'] != 'collections'
                 || $target2_card['location'] != 'collections'
                 || $target1_card['location_arg'] == $target2_card['location_arg']) {
@@ -476,15 +485,23 @@ class SiegeOfCranes extends Table
         $players = self::loadPlayersBasicInfos();
         $player_id = self::getActivePlayerId();
 
+        // make sure the card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure the card is a finch
         if ($current_card['type'] != 5) {
             $type = $current_card['type'];
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
+        // make sure the giver is not the active player
+        if ($giver_id == $player_id) {
+            throw new BgaUserException(self::_("You cannot target yourself"));
+        }
+
+        // make sure the giver has at least 3 cards
         if (count($this->cards->getCardsInLocation('hand', $giver_id)) < 3) {
             $giver_name = $players[$giver_id]['player_name'];
             throw new BgaUserException(sprintf(self::_("%s doesn't have enough cards to be targeted by a Finch card"), $giver_name));
@@ -524,7 +541,12 @@ class SiegeOfCranes extends Table
         $giver_id = self::getGameStateValue("target_player_id");
         $players = self::loadPlayersBasicInfos();
 
-        // check that target cards belong to the giver
+        // make sure the cards aren't the same
+        if ($target1_id == $target2_id) {
+            throw new BgaUserException($this->invalid_card_selection_message);
+        }
+
+        // make sure target cards belong to the giver
         $card1 = $this->cards->getCard($target1_id);
         $card2 = $this->cards->getCard($target2_id);
         if ($card1['location'] != 'hand' || $card1['location_arg'] != $giver_id ||
@@ -593,11 +615,12 @@ class SiegeOfCranes extends Table
         $player_id = self::getCurrentPlayerId();
         $current_card = $this->cards->getCard($card_id);
 
+        // make sure the card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
-        // 4 == fox card
+        // make sure the card is a fox
         if ($current_card['type'] != 4) {
             throw new BgaUserException($this->invalid_card_type_message);
         }
@@ -643,11 +666,12 @@ class SiegeOfCranes extends Table
         $player_id = self::getCurrentPlayerId();
         $current_card = $this->cards->getCard($card_id);
 
+        // make sure the card is in the active player's hand
         if ($current_card['location'] != 'hand' || $current_card['location_arg'] != $player_id) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
 
-        // 8 == crane card
+        // make sure the card is a crane
         if ($current_card['type'] != 8) {
             throw new BgaUserException($this->invalid_card_selection_message);
         }
@@ -692,10 +716,12 @@ class SiegeOfCranes extends Table
         foreach ($card_ids as $id) {
             $card = $this->cards->getCard($id);
 
+            // make sure the card is in the active player's hand
             if ($card['location'] != 'hand' || $card['location_arg'] != $player_id) {
                 throw new BgaUserException($this->invalid_card_selection_message);
             }
 
+            // validate the cards' types
             if ($cardType != $card['type']) {
                 throw new BgaUserException(self::_("Collected cards must all be of the same type"));
             }
@@ -740,6 +766,7 @@ class SiegeOfCranes extends Table
         $top_discard_id = self::getGameStateValue("top_discard_id");
 
         foreach ($card_ids as $key => $id) {
+            // make sure the cards are in the player's hand
             if (array_key_exists($id, $player_cards)) {
                 array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
                 array_push($types, $this->card_types[$player_cards[$id]['type']]['name']);
