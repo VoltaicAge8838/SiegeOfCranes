@@ -337,6 +337,11 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("Reaction cards may not be played now"));
         }
 
+        if (in_array(current_card['type'], array(1, 5, 6))) { // 1 = rat, 5 = finch, 6 = ferret
+            $type = $current_card['type'];
+            throw new BgaUserException(self::_("Extra information is needed to play that card"));
+        }
+
         $this->cards->moveCard($card_id, 'discard');
         $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));

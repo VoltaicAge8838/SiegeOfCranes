@@ -1,4 +1,3 @@
-use type names in user exceptions (e.g. "expected finch card but got ...")
 add game to BGG
 fix all internationalization stuffs (remove duplicates, make sure everything is set up to have a translation)
 fix empty discard pile shadow ("card" class not being removed)
