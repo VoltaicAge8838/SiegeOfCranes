@@ -36,6 +36,10 @@ $gameinfos = array(
 // Board game geek ID of the game
 'bgg_id' => 0,
 
+'custom_buy_button' => array(
+    'url' => 'https://www.thegamecrafter.com/games/siege-of-cranes',
+    'label' => 'The Game Crafter'
+ ),
 
 // Players configuration that can be played (ex: 2 to 4 players)
 'players' => array( 2,3,4 ),
@@ -66,7 +70,7 @@ $gameinfos = array(
 // Note: if you are NOT using any tie breaker, leave the empty string.
 //
 // Example: 'tie_breaker_description' => totranslate( "Number of remaining cards in hand" ),
-'tie_breaker_description' => "The next person in the turn order",
+'tie_breaker_description' => totranslate( "The next person in the turn order" ),
 
 // If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players

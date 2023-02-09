@@ -106,8 +106,8 @@ $machinestates = array(
 
     5 => array(
         "name" => "waitForUndoFoxes",
-        "description" => clienttranslate('Other players may play a Fox to cancel the action or pass'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Fox to cancel the action or pass'),
+        "description" => clienttranslate('Other players may play a Fox to cancel the attack or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to cancel the attack or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playFox", "passFox"),
         "transitions" => array(
@@ -119,8 +119,8 @@ $machinestates = array(
 
     6 => array(
         "name" => "waitForRedoFoxes",
-        "description" => clienttranslate('Other players may play a Fox to perform the action or pass'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Fox to perform the action or pass'),
+        "description" => clienttranslate('Other players may play a Fox to perform the attack or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to perform the attack or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playFox", "passFox"),
         "transitions" => array(
@@ -132,8 +132,8 @@ $machinestates = array(
 
     7 => array(
         "name" => "waitForCranes",
-        "description" => clienttranslate('Other players may play a Crane or pass'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Crane or pass'),
+        "description" => clienttranslate('Other players may play a Crane to discard the collected cards or pass'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Crane to discard the collected cards or pass'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playCrane", "passCrane"),
         "transitions" => array(

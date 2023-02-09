@@ -36,6 +36,11 @@ function (dojo, declare) {
             this.passButtonText = _('Pass');
             this.attackCardText = _('Attack Card');
             this.reactCardText = _('Reaction');
+            this.cancelText = _('Cancel');
+            this.playActionText = _('Play Action');
+            this.addToCollectionText = _('Add to Collection');
+            this.drawCardsText = _('Draw Cards');
+            this.discardCardsText = _('Discard Cards');
         },
 
         /*
@@ -191,9 +196,9 @@ function (dojo, declare) {
                 switch( stateName )
                 {
                     case 'playerTurn':
-                        this.addActionButton('playAction_button', _('Play Action'), 'playAction');
-                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
-                        this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
+                        this.addActionButton('playAction_button', this.playActionText, 'playAction');
+                        this.addActionButton('addToCollection_button', this.addToCollectionText, 'addToCollection');
+                        this.addActionButton('drawCards_button', this.drawCardsText, 'drawCards');
 
                         dojo.addClass('playAction_button', 'disabled');
                         dojo.addClass('addToCollection_button', 'disabled');
@@ -201,7 +206,7 @@ function (dojo, declare) {
 
                     case 'waitForUndoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
-                            this.addActionButton('playFox_button', _('Cancel Action'), 'playFox');
+                            this.addActionButton('playFox_button', _('Cancel Attack'), 'playFox');
                             this.addActionButton('passFox_button', this.passButtonText, 'passFox');
                         } else {
                             clearInterval(this.intervalId);
@@ -224,7 +229,7 @@ function (dojo, declare) {
 
                     case 'waitForRedoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
-                            this.addActionButton('playFox_button', _('Perform Action'), 'playFox');
+                            this.addActionButton('playFox_button', _('Perform Attack'), 'playFox');
                             this.addActionButton('passFox_button', this.passButtonText, 'passFox');
                         } else {
                             clearInterval(this.intervalId);
@@ -248,11 +253,11 @@ function (dojo, declare) {
                     case 'selectMultipleCardsToCollect':
                         this.isCoyoteState = true;
                     case 'selectCardToCollect':
-                        this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
+                        this.addActionButton('addToCollection_button', this.addToCollectionText, 'addToCollection');
                         break;
 
                     case 'kangarooDiscard':
-                        this.addActionButton('discardCards_button', _('Discard Cards'), 'discardCards');
+                        this.addActionButton('discardCards_button', this.discardCardsText, 'discardCards');
                         break;
 
                     case 'giveCards':
@@ -261,7 +266,7 @@ function (dojo, declare) {
 
                     case 'waitForCranes':
                         if (this.playerHand.getAllItems().find(card => card.type == 8)) {
-                            this.addActionButton('playCrane_button', _('Discard collected cards'), 'playCrane');
+                            this.addActionButton('playCrane_button', this.discardCardsText, 'playCrane');
                             this.addActionButton('passCrane_button', this.passButtonText, 'passCrane');
                         } else {
                             clearInterval(this.intervalId);
@@ -413,7 +418,7 @@ function (dojo, declare) {
             }
             this.ajaxcall(
                 "/" + this.game_name + "/" +this.game_name + "/" + action + ".html",
-                data,
+                {lock: true, ...data},
                 this,
                 function(result) {
                     this.playerHand.unselectAll();
@@ -463,16 +468,14 @@ function (dojo, declare) {
         playFerret: function(cardId, direction) {
             this.ajaxAction('playFerret', {
                 id: cardId,
-                direction: direction,
-                lock: true
+                direction: direction
             });
         },
 
         playFinch: function(cardId, giverId) {
             this.ajaxAction('playFinch', {
                 id: cardId,
-                giver_id: giverId,
-                lock: true
+                giver_id: giverId
             });
         },
 
@@ -489,8 +492,7 @@ function (dojo, declare) {
             this.ajaxAction('playRat', {
                 id: cardId,
                 target1_id: targets[0].id,
-                target2_id: targets[1].id,
-                lock: true
+                target2_id: targets[1].id
             });
 
             for (var playerId in this.gamedatas.players) {
@@ -502,9 +504,9 @@ function (dojo, declare) {
             this.gamedatas.gamestate.descriptionmyturn = this.backupDescriptionMyTurn;
             this.updatePageTitle();
             this.removeActionButtons();
-            this.addActionButton('playAction_button', _('Play Action'), 'playAction');
-            this.addActionButton('addToCollection_button', _('Add to Collection'), 'addToCollection');
-            this.addActionButton('drawCards_button', _('Draw Cards'), 'drawCards');
+            this.addActionButton('playAction_button', this.playActionText, 'playAction');
+            this.addActionButton('addToCollection_button', this.addToCollectionText, 'addToCollection');
+            this.addActionButton('drawCards_button', this.drawCardsText, 'drawCards');
         },
 
         playAction: function() {
@@ -522,7 +524,7 @@ function (dojo, declare) {
                     this.updatePageTitle();
                     this.removeActionButtons();
                     this.addActionButton('playRat_button', _('Swap cards'), this.playRat.bind(this, cardId));
-                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    this.addActionButton('cancelAction_button', this.cancelText, 'cancelAction');
 
                     for (var playerId in this.gamedatas.players) {
                         this.playersCollection[playerId].setSelectionMode(1);
@@ -538,13 +540,13 @@ function (dojo, declare) {
                         //
                         if (playerId != this.player_id) {
                             var buttonId = 'playFinch_' + playerId + '_button';
-                            this.addActionButton(buttonId , _(this.gamedatas.players[playerId].name), this.playFinch.bind(this, cardId, playerId));
+                            this.addActionButton(buttonId , this.gamedatas.players[playerId].name, this.playFinch.bind(this, cardId, playerId));
                             if (this.playersHandCount[playerId].getValue() < 3){
                                 dojo.addClass(buttonId, 'disabled');
                             }
                         }
                     }
-                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    this.addActionButton('cancelAction_button', this.cancelText, 'cancelAction');
                     break;
 
                 case "6": // ferret card
@@ -554,13 +556,12 @@ function (dojo, declare) {
                     this.removeActionButtons();
                     this.addActionButton('playFerretLeft_button', _('Left'), this.playFerret.bind(this, cardId, 0));
                     this.addActionButton('playFerretRight_button', _('Right'), this.playFerret.bind(this, cardId, 1));
-                    this.addActionButton('cancelAction_button', _('Cancel'), 'cancelAction');
+                    this.addActionButton('cancelAction_button', this.cancelText, 'cancelAction');
                     break;
 
                 default:
                     this.ajaxAction('playAction', {
-                        id: cardId,
-                        lock: true
+                        id: cardId
                     });
             }
         },
@@ -586,8 +587,7 @@ function (dojo, declare) {
             }
 
             this.ajaxAction('addToCollection', {
-                ids: cardIds,
-                lock: true
+                ids: cardIds
             });
         },
 
@@ -596,8 +596,7 @@ function (dojo, declare) {
             var cardIds = items.map(item => item.id).join(',');
 
             this.ajaxAction('discardCards', {
-                ids: cardIds,
-                lock: true
+                ids: cardIds
             });
         },
 
@@ -611,15 +610,12 @@ function (dojo, declare) {
 
             this.ajaxAction('giveCards', {
                 target1_id: items[0].id,
-                target2_id: items[1].id,
-                lock: true
+                target2_id: items[1].id
             });
         },
 
         drawCards: function() {
-            this.ajaxAction('drawCards', {
-                lock: true
-            });
+            this.ajaxAction('drawCards', {});
         },
 
         playFox: function() {
@@ -630,16 +626,13 @@ function (dojo, declare) {
             }
 
             this.ajaxAction('playFox', {
-                id: foxCard.id,
-                lock: true
+                id: foxCard.id
             });
         },
 
         passFox: function() {
             clearInterval(this.intervalId);
-            this.ajaxAction('passFox', {
-                lock: true
-            });
+            this.ajaxAction('passFox', {});
         },
 
         playCrane: function() {
@@ -650,16 +643,13 @@ function (dojo, declare) {
             }
 
             this.ajaxAction('playCrane', {
-                id: craneCard.id,
-                lock: true
+                id: craneCard.id
             });
         },
 
         passCrane: function() {
             clearInterval(this.intervalId);
-            this.ajaxAction('passCrane', {
-                lock: true
-            });
+            this.ajaxAction('passCrane', {});
         },
 
 
