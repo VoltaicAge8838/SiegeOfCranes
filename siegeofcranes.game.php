@@ -284,16 +284,18 @@ class SiegeOfCranes extends Table
             }
         }
 
+        $notification_text = clienttranslate('${player_name} draws ${number_of_cards} card(s)');
+
         $deck_count = count($this->cards->getCardsInLocation('deck'));
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         self::notifyAllPlayers(
             'drawCards',
-            clienttranslate('${player_name} draws ${number_of_cards} cards'),
+            $notification_text,
             array (
                 'player_id' => $player_id,
                 'player_name' => $player_name,
                 'number_of_cards' => $number_of_cards,
-                'card_count' => $card_count,
+                'hand_count' => $hand_count,
                 'deck_count' => $deck_count,
                 'second_deck' => $secondDeck,
             )
@@ -301,15 +303,45 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $player_id,
             'playerDrawCards',
-            clienttranslate('${player_name} draws ${number_of_cards} cards'),
+            $notification_text,
             array (
                 'player_id' => $player_id,
                 'player_name' => $player_name,
                 'number_of_cards' => $number_of_cards,
                 'cards' => $cards,
-                'card_count' => $card_count,
+                'hand_count' => $hand_count,
                 'deck_count' => $deck_count,
                 'second_deck' => $secondDeck,
+            )
+        );
+    }
+
+    function discardCards($player_id, $player_name, $cards) {
+        $top_discard_id = self::getGameStateValue("top_discard_id");
+
+        foreach ($cards as $key => $card) {
+            $top_discard_id = $card['id'];
+            $this->cards->moveCard($card['id'], 'discard');
+        }
+
+        $card_count = count($cards);
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $discard_count = count($this->cards->getCardsInLocation('discard'));
+        self::setGameStateValue("top_discard_id", $top_discard_id);
+        $top_discard_type = $this->cards->getCard($top_discard_id)['type'];
+
+        self::notifyAllPlayers(
+            'discardCards',
+            clienttranslate('${player_name} discards ${card_count} card(s)'),
+            array (
+                'cards' => $cards,
+                'player_id' => $player_id,
+                'player_name' => $player_name,
+                'card_count' => $card_count,
+                'hand_count' => $hand_count,
+                'discard_count' => $discard_count,
+                'top_discard_id' => $top_discard_id,
+                'top_discard_type' => $top_discard_type,
             )
         );
     }
@@ -346,7 +378,7 @@ class SiegeOfCranes extends Table
         }
 
         $this->cards->moveCard($card_id, 'discard');
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
 
@@ -354,15 +386,15 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${type_displayed}'),
+            clienttranslate('${player_name} plays ${card_name}'),
             array (
-                'i18n' => array('type_displayed'),
+                'i18n' => array('card_name'),
                 'card_id' => $card_id,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
                 'type' => $current_card['type'],
-                'type_displayed' => $this->card_types[$current_card['type']]['name'],
-                'card_count' => $card_count,
+                'card_name' => $this->card_types[$current_card['type']]['name'],
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -387,7 +419,7 @@ class SiegeOfCranes extends Table
         // make sure the card is a ferret
         if ($current_card['type'] != 6) {
             $type = $current_card['type'];
-            throw new BgaUserException($this->invalid_card_selection_message);
+            throw new BgaUserException($this->invalid_card_type_message);
         }
 
         // make sure we have a valid direction
@@ -397,7 +429,7 @@ class SiegeOfCranes extends Table
 
         $direction_name = $this->direction_names[$direction];
         $this->cards->moveCard($card_id, 'discard');
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
 
@@ -406,15 +438,16 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${type_displayed} and will have all players pass their hand to the ${direction}'),
+            clienttranslate('${player_name} plays ${card_name} to have all players pass their hand to the ${direction}'),
             array (
+                'i18n' => array('card_name', 'direction'),
                 'card_id' => $card_id,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
                 'type' => $current_card['type'],
-                'type_displayed' => $this->card_types[$current_card['type']]['name'],
+                'card_name' => $this->card_types[$current_card['type']]['name'],
                 'direction' => $direction_name,
-                'card_count' => $card_count,
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -435,7 +468,7 @@ class SiegeOfCranes extends Table
         // make sure the played card is a rat
         if ($current_card['type'] != 1) {
             $type = $current_card['type'];
-            throw new BgaUserException($this->invalid_card_selection_message);
+            throw new BgaUserException($this->invalid_card_type_message);
         }
 
         $target1_card = $this->cards->getCard($target1_id);
@@ -450,7 +483,7 @@ class SiegeOfCranes extends Table
 
         $players = self::loadPlayersBasicInfos();
         $this->cards->moveCard($card_id, 'discard');
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
 
@@ -460,8 +493,9 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} and will swap ${target1_player_name}\'s ${target1_card_name} with ${target2_player_name}\'s ${target2_card_name}'),
+            clienttranslate('${player_name} plays ${card_name} to swap ${target1_player_name}\'s ${target1_card_name} with ${target2_player_name}\'s ${target2_card_name}'),
             array (
+                'i18n' => array('card_name', 'target1_card_name', 'target2_card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
@@ -471,7 +505,7 @@ class SiegeOfCranes extends Table
                 'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
                 'target2_player_name' => $players[$target2_card['location_arg']]['player_name'],
                 'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
-                'card_count' => $card_count,
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -493,7 +527,7 @@ class SiegeOfCranes extends Table
         // make sure the card is a finch
         if ($current_card['type'] != 5) {
             $type = $current_card['type'];
-            throw new BgaUserException($this->invalid_card_selection_message);
+            throw new BgaUserException($this->invalid_card_type_message);
         }
 
         // make sure the giver is not the active player
@@ -508,7 +542,7 @@ class SiegeOfCranes extends Table
         }
 
         $this->cards->moveCard($card_id, 'discard');
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
 
@@ -518,15 +552,16 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} to receive two cards from ${target_player_name}'),
+            clienttranslate('${player_name} plays ${card_name} to receive 2 cards from ${target_player_name}'),
             array (
+                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
                 'player_name' => self::getActivePlayerName(),
                 'card_name' => $this->card_types[$current_card['type']]['name'],
                 'target_player_name' => $players[$giver_id]['player_name'],
-                'card_count' => $card_count,
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -561,9 +596,11 @@ class SiegeOfCranes extends Table
         $receiver_card_count = count($this->cards->getCardsInLocation('hand', $receiver_id));
         $giver_card_count = count($this->cards->getCardsInLocation('hand', $giver_id));
 
+        $give_cards_notification_message = clienttranslate('${giver_name} gives 2 cards to ${receiver_name}');
+
         self::notifyAllPlayers(
             'giveCards',
-            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
+            $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
@@ -580,7 +617,7 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $giver_id,
             'playerGiveCards',
-            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
+            $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
@@ -595,7 +632,7 @@ class SiegeOfCranes extends Table
         self::notifyPlayer(
             $receiver_id,
             'playerReceiveCards',
-            clienttranslate('${giver_name} gives two cards to ${receiver_name}'),
+            $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
                 'giver_name' => $players[$giver_id]['player_name'],
@@ -630,24 +667,25 @@ class SiegeOfCranes extends Table
 
         $this->cards->moveCard($card_id, 'discard');
 
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
         $players = self::loadPlayersBasicInfos();
 
         self::notifyAllPlayers(
             'playFox',
-            clienttranslate('${player_name} plays ${type_displayed} to affect ${target_type_displayed}'),
+            clienttranslate('${player_name} plays ${card_name} to affect ${target_card_name}'),
             array (
+                'i18n' => array('card_name', 'target_card_name'),
                 'player_id' => $player_id,
                 'player_name' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
                 'type' => $current_card['type'],
-                'type_displayed' => $this->card_types[$current_card['type']]['name'],
+                'card_name' => $this->card_types[$current_card['type']]['name'],
                 'target_card_id' => $target_card_id,
                 'target_type' => $target_card['type'],
-                'target_type_displayed' => $this->card_types[$target_card['type']]['name'],
-                'card_count' => $card_count,
+                'target_card_name' => $this->card_types[$target_card['type']]['name'],
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -673,28 +711,29 @@ class SiegeOfCranes extends Table
 
         // make sure the card is a crane
         if ($current_card['type'] != 8) {
-            throw new BgaUserException($this->invalid_card_selection_message);
+            throw new BgaUserException($this->invalid_card_type_message);
         }
 
         self::setGameStateValue("target_action_card_id", $card_id);
 
         $this->cards->moveCard($card_id, 'discard');
 
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
+        $hand_count = count($this->cards->getCardsInLocation('hand', $player_id));
         $discard_count = count($this->cards->getCardsInLocation('discard'));
         self::setGameStateValue("top_discard_id", $card_id);
         $players = self::loadPlayersBasicInfos();
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${type_displayed} to discard the last collected cards'),
+            clienttranslate('${player_name} plays ${card_name} to discard the most recently collected card(s)'),
             array (
+                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'player_name' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
                 'type' => $current_card['type'],
-                'type_displayed' => $this->card_types[$current_card['type']]['name'],
-                'card_count' => $card_count,
+                'card_name' => $this->card_types[$current_card['type']]['name'],
+                'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
         );
@@ -741,13 +780,14 @@ class SiegeOfCranes extends Table
         // notify collected card
         self::notifyAllPlayers(
             'addToCollection',
-            clienttranslate('${player_name} adds ${type_displayed} to their collection'),
+            clienttranslate('${player_name} adds ${card_name} to their collection'),
             array (
+                'i18n' => array('card_name'),
                 'card_ids' => $card_ids,
                 'player_id' => $player_id,
                 'player_name' => self::getActivePlayerName(),
                 'type' => $cardType,
-                'type_displayed' => $this->card_types[$cardType]['name'],
+                'card_name' => $this->card_types[$cardType]['name'],
                 'card_count' => $card_count,
             )
         );
@@ -761,17 +801,12 @@ class SiegeOfCranes extends Table
         $player_cards = $this->cards->getCardsInLocation('hand', $player_id);
 
         $discard_cards = array();
-        $types = array();
-
-        $top_discard_id = self::getGameStateValue("top_discard_id");
 
         foreach ($card_ids as $key => $id) {
             // make sure the cards are in the player's hand
             if (array_key_exists($id, $player_cards)) {
                 array_push($discard_cards, array('id'=>$id, 'type'=>$player_cards[$id]['type']));
-                array_push($types, $this->card_types[$player_cards[$id]['type']]['name']);
                 unset($player_cards[$id]);
-                $top_discard_id = $id;
             } else {
                 unset($card_ids[$key]);
             }
@@ -785,30 +820,7 @@ class SiegeOfCranes extends Table
             throw new BgaUserException(self::_("Too many cards selected to discard"));
         }
 
-        foreach ($card_ids as $id) {
-            $this->cards->moveCard($id, 'discard');
-        }
-        $card_count = count($this->cards->getCardsInLocation('hand', $player_id));
-        $discard_count = count($this->cards->getCardsInLocation('discard'));
-        self::setGameStateValue("top_discard_id", $top_discard_id);
-        $top_discard_type = $this->cards->getCard($top_discard_id)['type'];
-
-        $types_string = implode(', ', $types);
-
-        self::notifyAllPlayers(
-            'discardCards',
-            clienttranslate('${player_name} discards ${types_string}'),
-            array (
-                'cards' => $discard_cards,
-                'player_id' => $player_id,
-                'player_name' => self::getCurrentPlayerName(),
-                'types_string' => $types_string,
-                'card_count' => $card_count,
-                'discard_count' => $discard_count,
-                'top_discard_id' => $top_discard_id,
-                'top_discard_type' => $top_discard_type,
-            )
-        );
+        $this->discardCards($player_id, self::getCurrentPlayerName(), $discard_cards);
 
         $this->gamestate->setPlayerNonMultiactive($player_id, 'nextPlayer');
     }
@@ -873,8 +885,9 @@ class SiegeOfCranes extends Table
 
                 self::notifyAllPlayers(
                     'swapCollectionCards',
-                    clienttranslate('${target1_player_name}\'s ${target1_card_name} swapped with ${target2_player_name}\'s ${target2_card_name}'),
+                    clienttranslate('${target1_player_name}\'s ${target1_card_name} and ${target2_player_name}\'s ${target2_card_name} swap'),
                     array (
+                        'i18n' => array('target1_card_name', 'target2_card_name'),
                         'target1_player_name' => $players[$player1_id]['player_name'],
                         'target1_player_id' => $player1_id,
                         'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
@@ -892,27 +905,9 @@ class SiegeOfCranes extends Table
                 $this->gamestate->nextState('nextPlayer');
                 break;
             case 2: // pandas
-
-                // force the panda card to be the top card on the discard pile
-                $top_discard_id = $card_id;
-                $top_discard_type = $currentCard['type'];
-                self::setGameStateValue("top_discard_id", $top_discard_id);
+                // TODO: force the panda card to be the top card on the discard pile?
                 $discard_cards = $this->cards->getCardsInLocation('hand', $current_player_id);
-                $this->cards->moveAllCardsInLocation('hand', 'discard', $current_player_id);
-                $discard_count = count($this->cards->getCardsInLocation('discard'));
-                self::notifyAllPlayers(
-                    'discardCards',
-                    clienttranslate('${player_name} discards their hand'),
-                    array (
-                        'cards' => $discard_cards,
-                        'player_id' => $current_player_id,
-                        'player_name' => $current_player_name,
-                        'card_count' => 0,
-                        'discard_count' => $discard_count,
-                        'top_discard_id' => $top_discard_id,
-                        'top_discard_type' => $top_discard_type,
-                    )
-                );
+                $this->discardCards($current_player_id, $current_player_name, $discard_cards);
                 $this->drawCards(5, $current_player_id, $current_player_name);
                 $this->gamestate->nextState('nextPlayer');
                 break;
@@ -968,6 +963,7 @@ class SiegeOfCranes extends Table
                         'playersRotateHand',
                         clienttranslate('All players pass their hand to the ${direction_name}'),
                         array (
+                            'i18n' => array('direction_name'),
                             'player_id' => $player_id,
                             'cards' => $cards,
                             'direction_name' => $direction_name,
@@ -1092,38 +1088,7 @@ class SiegeOfCranes extends Table
                     $player_cards = $this->cards->getCardsInLocation('hand', $active_player);
 
                     if (count($player_cards) > 3) {
-                        $discard_cards = array_slice($player_cards, 3);
-                        $types = array();
-
-                        $top_discard_id = self::getGameStateValue("top_discard_id");
-
-                        foreach ($discard_cards as $key => $card) {
-                            array_push($types, $this->card_types[$card['type']]['name']);
-                            $top_discard_id = $card['id'];
-                            $this->cards->moveCard($card['id'], 'discard');
-                        }
-
-                        $card_count = count($this->cards->getCardsInLocation('hand', $active_player));
-                        $discard_count = count($this->cards->getCardsInLocation('discard'));
-                        self::setGameStateValue("top_discard_id", $top_discard_id);
-                        $top_discard_type = $this->cards->getCard($top_discard_id)['type'];
-
-                        $types_string = implode(', ', $types);
-
-                        self::notifyAllPlayers(
-                            'discardCards',
-                            clienttranslate('${player_name} discards ${types_string}'),
-                            array (
-                                'cards' => $discard_cards,
-                                'player_id' => $active_player,
-                                'player_name' => self::getCurrentPlayerName(),
-                                'types_string' => $types_string,
-                                'card_count' => $card_count,
-                                'discard_count' => $discard_count,
-                                'top_discard_id' => $top_discard_id,
-                                'top_discard_type' => $top_discard_type,
-                            )
-                        );
+                        $this->discardCards($active_player, self::getCurrentPlayerName(), $discard_cards);
                     }
 
                     $this->gamestate->setPlayerNonMultiactive($active_player, 'nextPlayer');

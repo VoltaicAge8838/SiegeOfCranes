@@ -726,7 +726,7 @@ function (dojo, declare) {
         },
 
         notif_updateHandCount: function(notif) {
-            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.hand_count);
             if (notif.args.second_deck > this.secondDeck || (notif.args.second_deck == this.secondDeck && notif.args.deck_count < this.deckCount.getValue())) {
                 this.deckCount.setValue(notif.args.deck_count);
                 this.secondDeck = notif.args.second_deck;
@@ -757,7 +757,7 @@ function (dojo, declare) {
 
         notif_playerDrawCards: function(notif) {
             this.addCardsToHand(notif.args.cards);
-            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.hand_count);
             if (notif.args.second_deck > this.secondDeck || (notif.args.second_deck == this.secondDeck && notif.args.deck_count < this.deckCount.getValue())) {
                 this.deckCount.setValue(notif.args.deck_count);
                 this.secondDeck = notif.args.second_deck;
@@ -778,20 +778,9 @@ function (dojo, declare) {
             }
         },
 
-        notif_playerDiscardAndDrawCards: function(notif) {
-            var cards = this.playerHand.getAllItems();
-            for (var card in cards) {
-                this.discardCard(notif.args.player_id, cards[card].type, cards[card].id, notif.args.top_discard_type);
-            }
-            this.addCardsToHand(notif.args.cards);
-            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
-            this.deckCount.setValue(notif.args.deck_count);
-            this.discardCount.setValue(notif.args.discard_count);
-        },
-
         notif_discardCard: function(notif) {
             this.discardCard(notif.args.player_id, notif.args.type, notif.args.card_id);
-            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.hand_count);
             this.discardCount.setValue(notif.args.discard_count);
         },
 
@@ -799,7 +788,7 @@ function (dojo, declare) {
             for (var card in notif.args.cards) {
                 this.discardCard(notif.args.player_id, notif.args.cards[card].type, notif.args.cards[card].id, notif.args.top_discard_type);
             }
-            this.playersHandCount[notif.args.player_id].setValue(notif.args.card_count);
+            this.playersHandCount[notif.args.player_id].setValue(notif.args.hand_count);
             this.discardCount.setValue(notif.args.discard_count);
         },
 
