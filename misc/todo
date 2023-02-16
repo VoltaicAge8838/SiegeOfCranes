@@ -3,6 +3,7 @@ fix all internationalization stuffs (remove duplicates, make sure everything is 
 fix empty discard pile shadow ("card" class not being removed)
 show details for what attack is being cancelled
 show details for what collected cards can be discarded
+switch to using client states: https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Title_bar_and_states
 
 improve auto-pass timer
 highlight collections for rat selection

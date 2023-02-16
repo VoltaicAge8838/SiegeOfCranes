@@ -229,7 +229,7 @@ function (dojo, declare) {
 
                     case 'waitForRedoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
-                            this.addActionButton('playFox_button', _('Perform Attack'), 'playFox');
+                            this.addActionButton('playFox_button', _('Permit Attack'), 'playFox');
                             this.addActionButton('passFox_button', this.passButtonText, 'passFox');
                         } else {
                             clearInterval(this.intervalId);
