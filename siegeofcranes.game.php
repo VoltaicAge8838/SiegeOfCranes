@@ -723,9 +723,12 @@ class SiegeOfCranes extends Table
         self::setGameStateValue("top_discard_id", $card_id);
         $players = self::loadPlayersBasicInfos();
 
+        $target_card_id = self::getGameStateValue("collected_card_id0");
+        $target_card_type = $this->cards->getCard($target_card_id)['type'];
+
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} to discard the most recently collected card(s)'),
+            clienttranslate('${player_name} plays ${card_name} to discard ${target_card_count} ${target_card_name} from ${target_player_name}\'s collection'),
             array (
                 'i18n' => array('card_name'),
                 'player_id' => $player_id,
@@ -735,6 +738,9 @@ class SiegeOfCranes extends Table
                 'card_name' => $this->card_types[$current_card['type']]['name'],
                 'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
+                'target_card_count' => self::getGameStateValue("collected_card_length"),
+                'target_card_name' => $this->card_types[$target_card_type]['shortName'],
+                'target_player_name' => self::getActivePlayerName(),
             )
         );
 
@@ -842,6 +848,16 @@ class SiegeOfCranes extends Table
         These methods function is to return some additional information that is specific to the current
         game state.
     */
+
+    function argWaitForCranes() {
+        $id = self::getGameStateValue("collected_card_id0");
+        $type = $this->cards->getCard($id)['type'];
+        return array(
+            'card_count' => self::getGameStateValue("collected_card_length"),
+            'card_name' => $this->card_types[$type]['shortName'],
+            'player_name' => self::getActivePlayerName(),
+        );
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
@@ -998,11 +1014,13 @@ class SiegeOfCranes extends Table
 
                 self::notifyAllPlayers(
                     'discardCollectedCards',
-                    clienttranslate('${player_name} discards the last collected cards'),
+                    clienttranslate('${player_name} discards ${card_count} collected ${card_name}'),
                     array (
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
                         'cards' => $cards,
+                        'card_count' => $length,
+                        'card_name' => $this->card_types[$top_discard_type]['shortName'],
                         'discard_count' => $discard_count,
                         'top_discard_id' => $top_discard_id,
                         'top_discard_type' => $top_discard_type,
