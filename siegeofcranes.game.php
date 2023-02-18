@@ -493,17 +493,17 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} to swap ${target1_player_name}\'s ${target1_card_name} with ${target2_player_name}\'s ${target2_card_name}'),
+            clienttranslate('${player_name1} plays ${card_name} to swap ${player_name2}\'s ${target1_card_name} with ${player_name3}\'s ${target2_card_name}'),
             array (
                 'i18n' => array('card_name', 'target1_card_name', 'target2_card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
-                'player_name' => self::getActivePlayerName(),
+                'player_name1' => self::getActivePlayerName(),
                 'card_name' => $this->card_types[$current_card['type']]['name'],
-                'target1_player_name' => $players[$target1_card['location_arg']]['player_name'],
+                'player_name2' => $players[$target1_card['location_arg']]['player_name'],
                 'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
-                'target2_player_name' => $players[$target2_card['location_arg']]['player_name'],
+                'player_name3' => $players[$target2_card['location_arg']]['player_name'],
                 'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
                 'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
@@ -552,15 +552,15 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} to receive 2 cards from ${target_player_name}'),
+            clienttranslate('${player_name1} plays ${card_name} to receive 2 cards from ${player_name2}'),
             array (
                 'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'type' => $current_card['type'],
                 'card_id' => $card_id,
-                'player_name' => self::getActivePlayerName(),
+                'player_name1' => self::getActivePlayerName(),
                 'card_name' => $this->card_types[$current_card['type']]['name'],
-                'target_player_name' => $players[$giver_id]['player_name'],
+                'player_name2' => $players[$giver_id]['player_name'],
                 'hand_count' => $hand_count,
                 'discard_count' => $discard_count,
             )
@@ -596,17 +596,17 @@ class SiegeOfCranes extends Table
         $receiver_card_count = count($this->cards->getCardsInLocation('hand', $receiver_id));
         $giver_card_count = count($this->cards->getCardsInLocation('hand', $giver_id));
 
-        $give_cards_notification_message = clienttranslate('${giver_name} gives 2 cards to ${receiver_name}');
+        $give_cards_notification_message = clienttranslate('${player_name1} gives 2 cards to ${player_name2}');
 
         self::notifyAllPlayers(
             'giveCards',
             $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
-                'giver_name' => $players[$giver_id]['player_name'],
+                'player_name1' => $players[$giver_id]['player_name'],
                 'giver_card_count' => $giver_card_count,
                 'receiver_id' => $receiver_id,
-                'receiver_name' => $players[$receiver_id]['player_name'],
+                'player_name2' => $players[$receiver_id]['player_name'],
                 'receiver_card_count' => $receiver_card_count,
             )
         );
@@ -620,10 +620,10 @@ class SiegeOfCranes extends Table
             $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
-                'giver_name' => $players[$giver_id]['player_name'],
+                'player_name1' => $players[$giver_id]['player_name'],
                 'giver_card_count' => $giver_card_count,
                 'receiver_id' => $receiver_id,
-                'receiver_name' => $players[$receiver_id]['player_name'],
+                'player_name2' => $players[$receiver_id]['player_name'],
                 'receiver_card_count' => $receiver_card_count,
                 'cards' => array($target1_card, $target2_card)
             )
@@ -635,10 +635,10 @@ class SiegeOfCranes extends Table
             $give_cards_notification_message,
             array (
                 'giver_id' => $giver_id,
-                'giver_name' => $players[$giver_id]['player_name'],
+                'player_name1' => $players[$giver_id]['player_name'],
                 'giver_card_count' => $giver_card_count,
                 'receiver_id' => $receiver_id,
-                'receiver_name' => $players[$receiver_id]['player_name'],
+                'player_name2' => $players[$receiver_id]['player_name'],
                 'receiver_card_count' => $receiver_card_count,
                 'cards' => array($target1_card, $target2_card)
             )
@@ -728,11 +728,11 @@ class SiegeOfCranes extends Table
 
         self::notifyAllPlayers(
             'playAction',
-            clienttranslate('${player_name} plays ${card_name} to discard ${target_card_count} ${target_card_name} from ${target_player_name}\'s collection'),
+            clienttranslate('${player_name1} plays ${card_name} to discard ${target_card_count} ${target_card_name} from ${player_name2}\'s collection'),
             array (
                 'i18n' => array('card_name'),
                 'player_id' => $player_id,
-                'player_name' => $players[$player_id]['player_name'],
+                'player_name1' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
                 'type' => $current_card['type'],
                 'card_name' => $this->card_types[$current_card['type']]['name'],
@@ -740,7 +740,7 @@ class SiegeOfCranes extends Table
                 'discard_count' => $discard_count,
                 'target_card_count' => self::getGameStateValue("collected_card_length"),
                 'target_card_name' => $this->card_types[$target_card_type]['shortName'],
-                'target_player_name' => self::getActivePlayerName(),
+                'player_name2' => self::getActivePlayerName(),
             )
         );
 
@@ -851,11 +851,23 @@ class SiegeOfCranes extends Table
 
     function argWaitForCranes() {
         $id = self::getGameStateValue("collected_card_id0");
-        $type = $this->cards->getCard($id)['type'];
+        $card = $this->cards->getCard($id);
+        $type = $card['type'];
+        $player_id = $card['location_arg'];
         return array(
             'card_count' => self::getGameStateValue("collected_card_length"),
             'card_name' => $this->card_types[$type]['shortName'],
-            'player_name' => self::getActivePlayerName(),
+            'otherplayer' => self::getPlayerNameById($player_id),
+            'otherplayer_id' => self::getActivePlayerId(),
+        );
+    }
+
+    function argGiveCards() {
+        $players = self::loadPlayersBasicInfos();
+        $giver_id = self::getGameStateValue("target_player_id");
+        return array(
+            'otherplayer' => $players[$giver_id]['player_name'],
+            'otherplayer_id' => $giver_id,
         );
     }
 
@@ -901,15 +913,15 @@ class SiegeOfCranes extends Table
 
                 self::notifyAllPlayers(
                     'swapCollectionCards',
-                    clienttranslate('${target1_player_name}\'s ${target1_card_name} and ${target2_player_name}\'s ${target2_card_name} swap'),
+                    clienttranslate('${player_name1}\'s ${target1_card_name} and ${player_name2}\'s ${target2_card_name} swap'),
                     array (
                         'i18n' => array('target1_card_name', 'target2_card_name'),
-                        'target1_player_name' => $players[$player1_id]['player_name'],
+                        'player_name1' => $players[$player1_id]['player_name'],
                         'target1_player_id' => $player1_id,
                         'target1_card_name' => $this->card_types[$target1_card['type']]['name'],
                         'target1_card_id' => $target1_id,
                         'target1_card_type' => $target1_card['type'],
-                        'target2_player_name' => $players[$player2_id]['player_name'],
+                        'player_name2' => $players[$player2_id]['player_name'],
                         'target2_player_id' => $player2_id,
                         'target2_card_name' => $this->card_types[$target2_card['type']]['name'],
                         'target2_card_id' => $target2_id,

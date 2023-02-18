@@ -108,14 +108,6 @@ $machinestates = array(
         "name" => "waitForUndoFoxes",
         "description" => clienttranslate('Other players may play a Fox'),
         "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent the attack.'),
-        // ${player} has played ${card} to do thing.
-        // ${you} may play a Fox to cancel ${card} and prevent ${action}
-        // rats =>
-        // Kangaroos =>
-        // Foxes =>
-        // Finches =>
-        // Ferrets =>
-        // Cranes => ${number} ${card} from being discarded ${target_player}
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playFox", "passFox"),
         "transitions" => array(
@@ -141,7 +133,7 @@ $machinestates = array(
     7 => array(
         "name" => "waitForCranes",
         "description" => clienttranslate('Other players may play a Crane'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Crane to discard ${card_count} ${card_name} from ${player_name}\'s collection'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Crane to discard ${card_count} ${card_name} from ${otherplayer}\'s collection'),
         "args" => "argWaitForCranes",
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playCrane", "passCrane"),
@@ -188,8 +180,9 @@ $machinestates = array(
 
     11 => array(
         "name" => "giveCards",
-        "description" => clienttranslate('Another player must choose 2 cards to give'),
+        "description" => clienttranslate('${otherplayer} must choose 2 cards to give'),
         "descriptionmyturn" => clienttranslate('${you} must choose 2 cards to give'),
+        "args" => "argGiveCards",
         "type" => "multipleactiveplayer",
         "possibleactions" => array("giveCards"),
         "transitions" => array(
