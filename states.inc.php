@@ -73,7 +73,10 @@ $machinestates = array(
         "transitions" => array(
             "nextPlayer" => 3,
             "playAction" => 4,
-            "waitForFoxes" => 5,
+            "waitForRatUndoFoxes" => 20,
+            "waitForKangarooUndoFoxes" => 21,
+            "waitForFinchUndoFoxes" => 22,
+            "waitForFerretUndoFoxes" => 23,
             "addToCollection" => 7,
             "gameEnd" => 99,
         )
@@ -104,32 +107,6 @@ $machinestates = array(
         )
     ),
 
-    5 => array(
-        "name" => "waitForUndoFoxes",
-        "description" => clienttranslate('Other players may play a Fox'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent the attack.'),
-        "type" => "multipleactiveplayer",
-        "possibleactions" => array("playFox", "passFox"),
-        "transitions" => array(
-            "playFox" => 6,
-            "passFox" => 4
-        ),
-        "action" => "stAllOtherPlayersInit"
-    ),
-
-    6 => array(
-        "name" => "waitForRedoFoxes",
-        "description" => clienttranslate('Other players may play a Fox'),
-        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit the attack.'),
-        "type" => "multipleactiveplayer",
-        "possibleactions" => array("playFox", "passFox"),
-        "transitions" => array(
-            "playFox" => 5,
-            "passFox" => 3
-        ),
-        "action" => "stAllOtherPlayersInit"
-    ),
-
     7 => array(
         "name" => "waitForCranes",
         "description" => clienttranslate('Other players may play a Crane'),
@@ -138,7 +115,7 @@ $machinestates = array(
         "type" => "multipleactiveplayer",
         "possibleactions" => array("playCrane", "passCrane"),
         "transitions" => array(
-            "playCrane" => 5,
+            "playCrane" => 24,
             "passCrane" => 3
         ),
         "action" => "stAllOtherPlayersInit"
@@ -189,6 +166,150 @@ $machinestates = array(
             "nextPlayer" => 3
         ),
         "action" => "stFinchPlayerInit"
+    ),
+
+    // fox undo states
+
+    20 => array(
+        "name" => "waitForRatUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent ${player1}\'s ${card1_name} and ${player2}\'s ${card2_name} from swapping'),
+        "args" => "argWaitForRatFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 25,
+            "passFox" => 4
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    21 => array(
+        "name" => "waitForKangarooUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent all players except ${otherplayer} from discarding down to 3 cards'),
+        "args" => "argWaitForKangarooFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 26,
+            "passFox" => 4
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    22 => array(
+        "name" => "waitForFinchUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent ${giver_name} from giving 2 cards to ${receiver_name}'),
+        "args" => "argWaitForFinchFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 27,
+            "passFox" => 4
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    23 => array(
+        "name" => "waitForFerretUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent all players from passing their hand to the ${direction_name}'),
+        "args" => "argWaitForFerretFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 28,
+            "passFox" => 4
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    24 => array(
+        "name" => "waitForCraneUndoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to prevent ${otherplayer} from discarding ${card_count} collected ${card_name}'),
+        "args" => "argWaitForCranes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 29,
+            "passFox" => 4
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    // fox redo states
+
+    25 => array(
+        "name" => "waitForRatRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit ${player1}\'s ${card1_name} and ${player2}\'s ${card2_name} to swap'),
+        "args" => "argWaitForRatFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 20,
+            "passFox" => 3
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    26 => array(
+        "name" => "waitForKangarooRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit all players except ${otherplayer} to discard down to 3 cards'),
+        "args" => "argWaitForKangarooFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 21,
+            "passFox" => 3
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    27 => array(
+        "name" => "waitForFinchRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit ${giver_name} to give 2 cards to ${receiver_name}'),
+        "args" => "argWaitForFinchFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 22,
+            "passFox" => 3
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    28 => array(
+        "name" => "waitForFerretRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit all players to pass their hand to the ${direction_name}'),
+        "args" => "argWaitForFerretFoxes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 23,
+            "passFox" => 3
+        ),
+        "action" => "stAllOtherPlayersInit"
+    ),
+
+    29 => array(
+        "name" => "waitForCraneRedoFoxes",
+        "description" => clienttranslate('Other players may play a Fox'),
+        "descriptionmyturn" => clienttranslate('${you} may play a Fox to permit ${otherplayer} to discard ${card_count} collected ${card_name}'),
+        "args" => "argWaitForCranes",
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array("playFox", "passFox"),
+        "transitions" => array(
+            "playFox" => 24,
+            "passFox" => 3
+        ),
+        "action" => "stAllOtherPlayersInit"
     ),
 
     // Final state.

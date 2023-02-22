@@ -150,8 +150,16 @@ function (dojo, declare) {
                     this.playerHand.setSelectionMode(1);
                     break;
 
-                case 'waitForUndoFoxes':
-                case 'waitForRedoFoxes':
+                case 'waitForRatUndoFoxes':
+                case 'waitForKangarooUndoFoxes':
+                case 'waitForFinchUndoFoxes':
+                case 'waitForFerretUndoFoxes':
+                case 'waitForCraneUndoFoxes':
+                case 'waitForRatRedoFoxes':
+                case 'waitForKangarooRedoFoxes':
+                case 'waitForFinchRedoFoxes':
+                case 'waitForFerretRedoFoxes':
+                case 'waitForCraneRedoFoxes':
                 case 'waitForCranes':
                     this.playerHand.setSelectionMode(0);
                     break;
@@ -204,7 +212,11 @@ function (dojo, declare) {
                         dojo.addClass('addToCollection_button', 'disabled');
                         break;
 
-                    case 'waitForUndoFoxes':
+                    case 'waitForRatUndoFoxes':
+                    case 'waitForKangarooUndoFoxes':
+                    case 'waitForFinchUndoFoxes':
+                    case 'waitForFerretUndoFoxes':
+                    case 'waitForCraneUndoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Cancel Attack'), 'playFox');
                             this.addActionButton('passFox_button', this.passButtonText, 'passFox');
@@ -227,7 +239,11 @@ function (dojo, declare) {
                         }
                         break;
 
-                    case 'waitForRedoFoxes':
+                    case 'waitForRatRedoFoxes':
+                    case 'waitForKangarooRedoFoxes':
+                    case 'waitForFinchRedoFoxes':
+                    case 'waitForFerretRedoFoxes':
+                    case 'waitForCraneRedoFoxes':
                         if (this.playerHand.getAllItems().find(card => card.type == 4)) {
                             this.addActionButton('playFox_button', _('Permit Attack'), 'playFox');
                             this.addActionButton('passFox_button', this.passButtonText, 'passFox');
@@ -313,8 +329,6 @@ function (dojo, declare) {
 
             stock.image_items_per_row = 5;
 
-            console.log(`stock ${imageName}`, stock);
-
             for (var type = 1; type <= 10; type++) {
                 stock.addItemType(type, type, g_gamethemeurl + 'img/' + imageName, type - 1);
             }
@@ -399,7 +413,6 @@ function (dojo, declare) {
         },
 
         addCardsToHand: function(cards, source='deck') {
-            console.log('addCardsToHand', source);
             this.slideTemporaryObject(
                 this.format_block('jstpl_cardback', {id: 1}),
                 'myhand',
@@ -765,7 +778,6 @@ function (dojo, declare) {
         },
 
         notif_playersRotateHand: function(notif) {
-            console.log('notif_playersRotateHand', notif.args);
             var cards = this.playerHand.getAllItems();
             for (var cardIndex in cards) {
                 this.giveCard(notif.args.player_id, cards[cardIndex].type, cards[cardIndex].id, 'overall_player_board_' + notif.args.next_player_id);
@@ -793,7 +805,6 @@ function (dojo, declare) {
         },
 
         notif_discardCollectedCards: function(notif) {
-            console.log('cards', notif.args.cards);
             for (var card in notif.args.cards) {
                 this.discardCollectedCard(notif.args.cards[card].location_arg, notif.args.cards[card].type, notif.args.cards[card].id, 'discard', notif.args.top_discard_type);
             }

@@ -399,8 +399,9 @@ class SiegeOfCranes extends Table
             )
         );
 
-        if ($this->card_types[$current_card['type']]['attack'] == 1) {
-            $this->gamestate->nextState('waitForFoxes');
+        if ($current_card['type'] == 3) { // 3 = kangaroo
+            self::setGameStateValue("card_player_id", $player_id);
+            $this->gamestate->nextState('waitForKangarooUndoFoxes');
         } else {
             $this->gamestate->nextState('playAction');
         }
@@ -452,7 +453,7 @@ class SiegeOfCranes extends Table
             )
         );
 
-        $this->gamestate->nextState('waitForFoxes');
+        $this->gamestate->nextState('waitForFerretUndoFoxes');
     }
 
     function playRat($card_id, $target1_id, $target2_id) {
@@ -510,7 +511,7 @@ class SiegeOfCranes extends Table
             )
         );
 
-        $this->gamestate->nextState('waitForFoxes');
+        $this->gamestate->nextState('waitForRatUndoFoxes');
     }
 
     function playFinch($card_id, $giver_id) {
@@ -566,7 +567,7 @@ class SiegeOfCranes extends Table
             )
         );
 
-        $this->gamestate->nextState('waitForFoxes');
+        $this->gamestate->nextState('waitForFinchUndoFoxes');
     }
 
     function giveCards($target1_id, $target2_id) {
@@ -863,11 +864,68 @@ class SiegeOfCranes extends Table
     }
 
     function argGiveCards() {
-        $players = self::loadPlayersBasicInfos();
         $giver_id = self::getGameStateValue("target_player_id");
         return array(
-            'otherplayer' => $players[$giver_id]['player_name'],
+            'otherplayer' => self::getPlayerNameById($giver_id),
             'otherplayer_id' => $giver_id,
+        );
+    }
+
+    function argWaitForRatFoxes() {
+        //${you} may play a Fox to prevent ${player1}\'s ${card1_name} and ${player2}\'s ${card2_name} from swapping
+
+        $card1 = $this->cards->getCard(self::getGameStateValue("rat_target_id1"));
+        $player1_id = $card1['location_arg'];
+        $player1_name = self::getPlayerNameById($player1_id);
+        $player1_color = self::getPlayerColorById($player1_id);
+
+        $card2 = $this->cards->getCard(self::getGameStateValue("rat_target_id2"));
+        $player2_id = $card2['location_arg'];
+        $player2_name = self::getPlayerNameById($player2_id);
+        $player2_color = self::getPlayerColorById($player2_id);
+
+        return array(
+            // These strings contain raw HTML and should NOT be translated.
+            // Note: these don't handle light colors.
+            'player1' => "<span style=\"color:#$player1_color\">$player1_name</span>",
+            'card1_name' => $this->card_types[$card1['type']]['shortName'],
+            'player2' => "<span style=\"color:#$player2_color\">$player2_name</span>",
+            'card2_name' => $this->card_types[$card1['type']]['shortName'],
+        );
+    }
+
+    function argWaitForKangarooFoxes() {
+        //${you} may play a Fox to prevent all players except ${otherplayer} from discarding down to 3 cards'
+        $player_id = self::getGameStateValue("card_player_id");
+        return array(
+            'otherplayer' => self::getPlayerNameById($player_id),
+            'otherplayer_id' => $player_id,
+        );
+    }
+
+    function argWaitForFinchFoxes() {
+        //${you} may play a Fox to prevent ${giver_name} from giving 2 cards to ${receiver_name}
+
+        $giver_id = self::getGameStateValue("target_player_id");
+        $giver_name = self::getPlayerNameById($giver_id);
+        $giver_color = self::getPlayerColorById($giver_id);
+
+        $receiver_id = self::getGameStateValue("card_player_id");
+        $receiver_name = self::getPlayerNameById($receiver_id);
+        $receiver_color = self::getPlayerColorById($receiver_id);
+
+        return array(
+            // These strings contain raw HTML and should NOT be translated.
+            // Note: these don't handle light colors.
+            'giver_name' => "<span style=\"color:#$giver_color\">$giver_name</span>",
+            'receiver_name' => "<span style=\"color:#$receiver_color\">$receiver_name</span>",
+        );
+    }
+
+    function argWaitForFerretFoxes() {
+        //${you} may play a Fox to prevent all players from passing their hand to the ${direction_name}
+        return array(
+            'direction_name' => $this->direction_names[self::getGameStateValue("ferret_direction")],
         );
     }
 
@@ -941,7 +999,6 @@ class SiegeOfCranes extends Table
                 break;
             case 3: // kangaroo
                 $this->drawCards(2, $current_player_id, $current_player_name);
-                self::setGameStateValue("card_player_id", $current_player_id);
                 $this->gamestate->nextState('kangarooDiscard');
                 break;
             case 4: // foxes
