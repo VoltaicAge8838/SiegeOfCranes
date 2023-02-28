@@ -815,7 +815,8 @@ function (dojo, declare) {
             this.deckCount.setValue(this.discardCount.getValue());
             this.discardCount.setValue(0);
 
-            dojo.removeClass('discard', 'cardontable', 'card');
+            dojo.removeClass('discard', 'cardontable');
+            dojo.removeClass('discard', 'card');
             dojo.style('discard', 'background-position', '');
             $('discard').innerHTML = '';
             this.slideTemporaryObject(

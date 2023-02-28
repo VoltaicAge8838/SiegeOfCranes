@@ -1,14 +1,15 @@
 add game to BGG
 fix all internationalization stuffs (remove duplicates, make sure everything is set up to have a translation)
-fix empty discard pile shadow ("card" class not being removed)
-switch to using client states: https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Title_bar_and_states
+fix played card being the top of an empty discard after shuffle.
 add i18n tags to state args
-improve and colorize fox logs
+test crocodile endgame (shouldn't add card to collection)
 
+improve and colorize fox logs
 improve auto-pass timer
 highlight collections for rat selection
 disable selecting hand cards for rat selection
 
+switch to using client states: https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Title_bar_and_states
 switch to using countCardInLocation
 card depth for draw/discard piles?
 more than one card moving for "draw card" animation
