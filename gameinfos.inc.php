@@ -34,7 +34,7 @@ $gameinfos = array(
 'publisher_bgg_id' => 2456,
 
 // Board game geek ID of the game
-'bgg_id' => 0,
+'bgg_id' => 381324,
 
 'custom_buy_button' => array(
     'url' => 'https://www.thegamecrafter.com/games/siege-of-cranes',
@@ -135,7 +135,7 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-    totranslate("A fast-paced card game where players compete to gather the largest assembly of animals."),
+    totranslate("Siege of Cranes is a turn-based game where players must decide between adding cards to their collection to gain points or discarding cards to perform various actions, most of which affect other players. The player with the most points at the end of the game wins, with large collections of a single type of animal gaining the most points."),
 //    totranslate("It was awarded best triangle game of the year in 2005 and nominated for the Spiel des Jahres."),
 //    ...
 ),
