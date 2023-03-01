@@ -731,7 +731,7 @@ class SiegeOfCranes extends Table
             'playAction',
             clienttranslate('${player_name1} plays ${card_name} to discard ${target_card_count} ${target_card_name} from ${player_name2}\'s collection'),
             array (
-                'i18n' => array('card_name'),
+                'i18n' => array('card_name', 'target_card_name'),
                 'player_id' => $player_id,
                 'player_name1' => $players[$player_id]['player_name'],
                 'card_id' => $card_id,
@@ -856,6 +856,7 @@ class SiegeOfCranes extends Table
         $type = $card['type'];
         $player_id = $card['location_arg'];
         return array(
+            'i18n' => array('card_name'),
             'card_count' => self::getGameStateValue("collected_card_length"),
             'card_name' => $this->card_types[$type]['shortName'],
             'otherplayer' => self::getPlayerNameById($player_id),
@@ -885,6 +886,7 @@ class SiegeOfCranes extends Table
         $player2_color = self::getPlayerColorById($player2_id);
 
         return array(
+            'i18n' => array('card1_name', 'card2_name'),
             // These strings contain raw HTML and should NOT be translated.
             // Note: these don't handle light colors.
             'player1' => "<span style=\"color:#$player1_color\">$player1_name</span>",
@@ -925,6 +927,7 @@ class SiegeOfCranes extends Table
     function argWaitForFerretFoxes() {
         //${you} may play a Fox to prevent all players from passing their hand to the ${direction_name}
         return array(
+            'i18n' => array('direction_name'),
             'direction_name' => $this->direction_names[self::getGameStateValue("ferret_direction")],
         );
     }
@@ -1085,6 +1088,7 @@ class SiegeOfCranes extends Table
                     'discardCollectedCards',
                     clienttranslate('${player_name} discards ${card_count} collected ${card_name}'),
                     array (
+                        'i18n' => array('card_name'),
                         'player_id' => $current_player_id,
                         'player_name' => $current_player_name,
                         'cards' => $cards,

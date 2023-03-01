@@ -1,7 +1,5 @@
 fix all internationalization stuffs (remove duplicates, make sure everything is set up to have a translation)
 fix played card being the top of an empty discard after shuffle.
-add i18n tags to state args
-test crocodile endgame (shouldn't add card to collection)
 
 improve and colorize fox logs
 improve auto-pass timer
