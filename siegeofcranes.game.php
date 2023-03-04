@@ -272,8 +272,9 @@ class SiegeOfCranes extends Table
                 );
 
                 // finish drawing cards
-                if (count($cards) < $number_of_cards) {
-                    $cards = array_merge($cards, $this->cards->pickCards($number_of_cards, 'deck', $player_id));
+                $remaining_number_of_cards = $number_of_cards - count($cards);
+                if (0 < $remaining_number_of_cards) {
+                    $cards = array_merge($cards, $this->cards->pickCards($remaining_number_of_cards, 'deck', $player_id));
                     // check if we've exhausted the deck again
                     if ($this->cards->countCardInLocation('deck') == 0) {
                         $this->gamestate->nextState('gameEnd');
@@ -373,7 +374,6 @@ class SiegeOfCranes extends Table
 
         // make sure the played card isn't a rat, finch, or ferret. Those require more parameters.
         if (in_array($current_card['type'], array(1, 5, 6))) { // 1 = rat, 5 = finch, 6 = ferret
-            $type = $current_card['type'];
             throw new BgaUserException(self::_("Extra information is needed to play that card"));
         }
 

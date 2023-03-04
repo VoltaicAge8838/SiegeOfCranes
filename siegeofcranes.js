@@ -689,13 +689,16 @@ function (dojo, declare) {
             dojo.subscribe('discardCards', this, "notif_discardCards");
             dojo.subscribe('playersRotateHand', this, "notif_playersRotateHand");
             dojo.subscribe('playAction', this, "notif_discardCard");
+            this.notifqueue.setSynchronous( 'playAction', 500 )
             dojo.subscribe('playFox', this, "notif_discardCard");
+            this.notifqueue.setSynchronous( 'playFox', 500 )
             dojo.subscribe('discardCollectedCards', this, "notif_discardCollectedCards");
             dojo.subscribe('giveCards', this, "notif_giveCards");
             this.notifqueue.setIgnoreNotificationCheck('giveCards', (notif) => notif.args.giver_id == this.player_id || notif.args.receiver_id == this.player_id);
             dojo.subscribe('playerGiveCards', this, "notif_playerGiveCards");
             dojo.subscribe('playerReceiveCards', this, "notif_playerReceiveCards");
             dojo.subscribe('shuffleDiscard', this, "notif_shuffleDiscard");
+            this.notifqueue.setSynchronous( 'shuffleDiscard', 500 )
         },
 
         notif_addToCollection: function(notif) {
