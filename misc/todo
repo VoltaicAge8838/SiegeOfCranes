@@ -1,4 +1,7 @@
 fix all internationalization stuffs (remove duplicates, make sure everything is set up to have a translation)
+test in other browsers (chrome, edge, safari, mobile firefox, mobile chrome, ...)
+make sure I can't get generic "invalid cards selected" messages when using the UI (that should only happen if a user is being malicious)
+https://en.doc.boardgamearena.com/Pre-release_checklist
 
 highlight collections for rat selection
 disable selecting hand cards for rat selection

@@ -25,13 +25,13 @@ $gameinfos = array(
 'year' => 2020,
 
 // Game publisher (use empty string if there is no publisher)
-'publisher' => 'The Game Crafter, LLC',
+'publisher' => '(Self-Published)',
 
 // Url of game publisher website
-'publisher_website' => 'https://www.thegamecrafter.com/',
+'publisher_website' => '',
 
 // Board Game Geek ID of the publisher
-'publisher_bgg_id' => 2456,
+'publisher_bgg_id' => 4,
 
 // Board game geek ID of the game
 'bgg_id' => 381324,
